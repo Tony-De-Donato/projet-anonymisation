@@ -1,4 +1,4 @@
-package com.netceler.projet_anonymisation.fileStorage;
+package com.netceler.project_anonymization.fileStorage;
 
 
 import lombok.Getter;
@@ -12,5 +12,7 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 public class FileStorageProperties {
 
-    private String location;
+    private String defaultLocation;
+    private String toAnonymizeLocation;
+    private String anonymizedLocation;
 }

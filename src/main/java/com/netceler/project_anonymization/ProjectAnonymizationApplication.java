@@ -1,13 +1,13 @@
-package com.netceler.projet_anonymisation;
+package com.netceler.project_anonymization;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ProjetAnonymisationApplication {
+public class ProjectAnonymizationApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ProjetAnonymisationApplication.class, args);
+		SpringApplication.run(ProjectAnonymizationApplication.class, args);
 	}
 
 }
