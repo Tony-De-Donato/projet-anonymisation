@@ -1,16 +1,16 @@
 package com.netceler.project_anonymization.fileStorage;
 
+import org.springframework.core.io.Resource;
 import org.json.JSONObject;
 import org.apache.coyote.BadRequestException;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
-import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.MalformedURLException;
 import java.nio.file.*;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 @Service
 public class FileStorageService {
@@ -44,27 +44,23 @@ public class FileStorageService {
 
 
 
-//    FILE STORAGE METHODS
-
-    public void storeMultipartFile(MultipartFile file, Path path) throws BadRequestException {
+    public void storeFile(MultipartFile file, Path path) throws BadRequestException {
         try {
             if (file.isEmpty()) {
-                throw new BadRequestException("Failed to store empty file.");
+                throw new BadRequestException("Failed to store empty file");
             }
-            Path destinationFile = path.resolve(
-                            Paths.get(Objects.requireNonNull(file.getOriginalFilename())))
+            Path destinationFile = path.resolve(Objects.requireNonNull(file.getOriginalFilename()))
                     .normalize().toAbsolutePath();
-            if (!destinationFile.getParent().equals(path.toAbsolutePath())) {
-                throw new BadRequestException(
-                        "Cannot store file outside current directory.");
-            }
+            assertNotOutsideStorage(path, destinationFile);
             try (InputStream inputStream = file.getInputStream()) {
-                Files.copy(inputStream, destinationFile,
-                        StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+            catch (IOException e) {
+                throw new BadRequestException("Failed to store file");
             }
         }
         catch (IOException e) {
-            throw new BadRequestException("Failed to store file.", e);
+            throw new BadRequestException(e.getMessage());
         }
     }
 
@@ -74,22 +70,24 @@ public class FileStorageService {
             String content = file.getString("content");
             Path destinationFile = path.resolve(filename)
                     .normalize().toAbsolutePath();
-            if (!destinationFile.getParent().equals(path.toAbsolutePath())) {
-                throw new BadRequestException(
-                        "Cannot store file outside current directory.");
-            }
+            assertNotOutsideStorage(path, destinationFile);
             Files.write(destinationFile, content.getBytes());
         }
         catch (IOException e) {
-            throw new BadRequestException("Failed to store file.", e);
+            throw new BadRequestException("Failed to store file.");
+        }
+    }
+
+    public void assertNotOutsideStorage(Path path, Path destinationFile) throws BadRequestException {
+        if (!destinationFile.getParent().equals(path.toAbsolutePath())) {
+            throw new BadRequestException(
+                    "Cannot store file outside current directory.");
         }
     }
 
 
 
 
-
-//    LOAD FROM STORAGE METHODS
 
     public Path load(String filename, Path path) throws BadRequestException {
         try {
@@ -100,49 +98,33 @@ public class FileStorageService {
         }
     }
 
-    public String loadAsJsonString(String fileName, Path path) throws BadRequestException {
-        try {
-            Path file = load(fileName, path);
-            JSONObject jsonFile = new JSONObject();
-            String content = new String(Files.readAllBytes(file));
-            jsonFile.put("filename", file.getFileName());
-            jsonFile.put("content", content);
-            return jsonFile.toString();
 
-        } catch (IOException e) {
-            throw new BadRequestException("Could not read file: "+ fileName);
-        }
-    }
-
-    public Stream<Path> loadAllFiles(Path path) throws BadRequestException {
-        try {
-            return Files.walk(path, 1)
-                    .filter(path1 -> !path1.equals(path))
-                    .map(path::relativize);
-        }
-        catch (IOException e) {
-            throw new BadRequestException("Failed to read stored files in the directory: "+path.toString());
-        }
-    }
 
     public String loadFileContent(String fileName, Path path) throws BadRequestException {
+        if (fileName.contains("..")) {
+            throw new BadRequestException("Cannot read file with relative path outside current directory");
+        }
         try {
             Path file = load(fileName, path);
             return new String(Files.readAllBytes(file));
         } catch (IOException e) {
-            throw new BadRequestException("Could not read the content of the file: "+ fileName+" in the directory: "+path.toString());
+            throw new BadRequestException("Could not read the content of the file: "+ fileName);
         }
     }
 
+    public JSONObject getDictFile(String fileName) throws BadRequestException {
+        if (!fileName.contains("_dict")) {
+            throw new BadRequestException("This file is not a dictionary");
+        }
+        String content = loadFileContent(fileName, anonymizedStorage);
+        return new JSONObject().put("fileName", fileName).put("content", content);
 
-
-
-
-//    DELETE METHODS
-
-    public void clearDir(Path path) {
-        FileSystemUtils.deleteRecursively(path.toFile());
     }
+
+
+
+
+
 
     public void deleteFileIfExists(String filename, Path path) throws BadRequestException {
         try {
@@ -152,6 +134,36 @@ public class FileStorageService {
         }
     }
 
+
+
+    public String addStringBeforeExtension(String filename, String string) {
+        String[] parts = filename.split("\\.");
+        return parts[0] + string + "." + parts[1];
+    }
+
+
+
+    public JSONObject anonymizeFile(MultipartFile file, MultipartFile conversionDictionary) throws BadRequestException {
+        storeFile(file, toAnonymizeStorage);
+        try {
+            String fileContent = loadFileContent(file.getOriginalFilename(), toAnonymizeStorage);
+
+//          TODO: anonymize file content using conversionDictionary
+            String anonymizedContent = fileContent+" anonymized";
+
+            String newFileName = addStringBeforeExtension(file.getOriginalFilename(), "_anonymized");
+            String newDictName = addStringBeforeExtension(file.getOriginalFilename(), "_dict");
+
+            storeFromJson(new JSONObject().put("filename", newFileName).put("content", anonymizedContent), anonymizedStorage);
+            storeFromJson(new JSONObject().put("filename", newDictName).put("content", "conversionDictionary"), anonymizedStorage);
+            deleteFileIfExists(file.getOriginalFilename(), toAnonymizeStorage);
+
+            return new JSONObject().put("fileName", newFileName).put("dict", newDictName).put("content", anonymizedContent);
+
+        } catch (BadRequestException e) {
+            throw new BadRequestException("Failed to anonymize file");
+        }
+    }
 
 
 
