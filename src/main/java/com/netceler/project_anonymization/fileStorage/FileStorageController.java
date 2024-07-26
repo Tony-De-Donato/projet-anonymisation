@@ -30,9 +30,8 @@ public class FileStorageController {
 
     @GetMapping(value="/getDict/{filename}")
     public ResponseEntity<String> getDict(@PathVariable String filename) throws BadRequestException {
-        String response = fileStorageService.getDictFile(filename).toString();
         return ResponseEntity.ok()
-                .body(response);
+                .body(fileStorageService.getDictFile(filename).toString());
     }
 
 

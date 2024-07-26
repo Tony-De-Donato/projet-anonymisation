@@ -1,41 +1,76 @@
 package com.netceler.project_anonymization.IT.steps;
 
+import com.github.dockerjava.transport.DockerHttpClient;
 import com.netceler.project_anonymization.IT.configurations.SpringCucumberTest;
 import com.netceler.project_anonymization.fileStorage.FileStorageProperties;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.apache.coyote.Response;
 import org.assertj.core.api.Assertions;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.http.HttpClient;
 
 public class FileStorageSteps extends SpringCucumberTest {
 
     @Autowired
     private FileStorageProperties fileStorageProperties;
 
-    private MultipartFile file;
+    private RestClient.RequestBodySpec returnedFile;
 
     @Given("A configuration for file storage")
-    public void cnfiguration() {
-        fileStorageProperties.setDefaultLocation("src/test/resources");
-        fileStorageProperties.setToAnonymizeLocation("src/test/resources");
-        fileStorageProperties.setAnonymizedLocation("src/test/resources");
+    public void configuration() {
+        fileStorageProperties.setDefaultLocation("src/test/resources/fileStorage/defaultStorage/");
+        fileStorageProperties.setToAnonymizeLocation("src/test/resources/fileStorage/filesToAnonymize/");
+        fileStorageProperties.setAnonymizedLocation("src/test/resources/fileStorage/filesAnonymized/");
     }
 
-    @When("I post a file {string} for anonymized")
-    public void i_get_a_file_text_for_anonymized(String fileName) {
-        final var restClient = RestClient.builder().baseUrl("http://localhost:" + port).build();
-        file = restClient.post().uri("/anonymized/{fileName}", fileName).retrieve().body(MultipartFile.class);
+    @When("I post two files {string} and {string} for anonymize")
+    public void i_post_a_file_text_for_anonymize(String fileName,String dictName) throws IOException {
 
-        // TODO continue with give a file instead of file name
+
+        final var fileToSend = new File("src/test/resources/filesForTests/" + fileName);
+        final var dictFile = new File("src/test/resources/filesForTests/" + dictName);
+
+
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("file", fileToSend);
+        body.add("dictionary", dictFile);
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity
+                = new HttpEntity<>(body);
+
+        returnedFile = RestClient.builder()
+                .baseUrl("http://localhost:" + port)
+                .build()
+                .post()
+                .uri("/anonymize/")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(requestEntity);
+
+
     }
+
+
+
 
     @Then("I should get the file {string} anonymized")
     public void i_should_get_the_file_text_anonymized(String fileName) {
-        Assertions.assertThat(file).isNotNull();
-
+        Assertions.assertThat(returnedFile).isNotNull();
+        if (!returnedFile.toString().equals("test_anonymized.txt")) {
+            throw new AssertionError("The file is not the expected one : " + returnedFile);
+        }
         // TODO continue with a check of content of file
     }
 }
