@@ -1,19 +1,21 @@
 package com.netceler.project_anonymization.fileStorage;
 
-import org.springframework.core.io.Resource;
+import com.netceler.project_anonymization.anonymizer.AnonymizerService;
 import org.json.JSONObject;
 import org.apache.coyote.BadRequestException;
-import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.nio.file.*;
 import java.util.Objects;
 
+
+
 @Service
 public class FileStorageService {
+
+    private final AnonymizerService anonymizerService;
 
     private final FileStorageProperties fileStorageProperties;
 
@@ -23,6 +25,7 @@ public class FileStorageService {
 
     FileStorageService(final FileStorageProperties fileStorageProperties) throws BadRequestException {
         this.fileStorageProperties = fileStorageProperties;
+        this.anonymizerService = new AnonymizerService();
         if (fileStorageProperties.getDefaultLocation().isBlank() || fileStorageProperties.getToAnonymizeLocation().isBlank() || fileStorageProperties.getAnonymizedLocation().isBlank()) {
             throw new BadRequestException("Storage locations are not set");
         }
@@ -116,8 +119,14 @@ public class FileStorageService {
         if (!fileName.contains("_dict")) {
             throw new BadRequestException("This file is not a dictionary");
         }
-        String content = loadFileContent(fileName, anonymizedStorage);
-        return new JSONObject().put("fileName", fileName).put("content", content);
+        try {
+            String content = loadFileContent(fileName, anonymizedStorage);
+            return new JSONObject().put("fileName", fileName).put("content", content);
+        }
+        catch (Exception e) {
+            throw new BadRequestException("Could not read the content of the file: "+ fileName);
+        }
+
 
     }
 
@@ -145,24 +154,29 @@ public class FileStorageService {
 
     public JSONObject anonymizeFile(MultipartFile file, MultipartFile conversionDictionary) throws BadRequestException {
         storeFile(file, toAnonymizeStorage);
-        try {
-            String fileContent = loadFileContent(file.getOriginalFilename(), toAnonymizeStorage);
+        storeFile(conversionDictionary, toAnonymizeStorage);
 
-//          TODO: anonymize file content using conversionDictionary
-            String anonymizedContent = fileContent+" anonymized";
+        try {
+            String fileContent = loadFileContent(Objects.requireNonNull(file.getOriginalFilename()), toAnonymizeStorage);
+            String dictContent = loadFileContent(Objects.requireNonNull(conversionDictionary.getOriginalFilename()), toAnonymizeStorage);
+
+            String anonymizedContent = anonymizerService.handleAnonymization(fileContent, dictContent);
 
             String newFileName = addStringBeforeExtension(file.getOriginalFilename(), "_anonymized");
             String newDictName = addStringBeforeExtension(file.getOriginalFilename(), "_dict");
 
             storeFromJson(new JSONObject().put("filename", newFileName).put("content", anonymizedContent), anonymizedStorage);
-            storeFromJson(new JSONObject().put("filename", newDictName).put("content", "conversionDictionary"), anonymizedStorage);
+            storeFromJson(new JSONObject().put("filename", newDictName).put("content", dictContent), anonymizedStorage);
+
             deleteFileIfExists(file.getOriginalFilename(), toAnonymizeStorage);
+            deleteFileIfExists(conversionDictionary.getOriginalFilename(), toAnonymizeStorage);
 
             return new JSONObject().put("fileName", newFileName).put("dict", newDictName).put("content", anonymizedContent);
 
         } catch (BadRequestException e) {
             throw new BadRequestException("Failed to anonymize file");
         }
+
     }
 
 

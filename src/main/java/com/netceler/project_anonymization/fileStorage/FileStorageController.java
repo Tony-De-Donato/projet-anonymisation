@@ -7,9 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.InputStream;
-
 
 @RestController
 public class FileStorageController {
@@ -18,7 +15,7 @@ public class FileStorageController {
 
 
 
-    public FileStorageController(final FileStorageService fileStorageService, final FileStorageProperties fileStorageProperties) {
+    public FileStorageController(final FileStorageService fileStorageService) {
         this.fileStorageService = fileStorageService;
     }
 

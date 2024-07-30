@@ -39,7 +39,6 @@ class FileStorageControllerTest {
 		final var file = new File("src/test/resources/filesForTests/test.txt");
 		final var dictFile = new File("src/test/resources/filesForTests/dictTest.json");
 
-
 		FileInputStream fileInputStream = new FileInputStream(file);
 		FileInputStream dictFileInputStream = new FileInputStream(dictFile);
 
@@ -50,16 +49,15 @@ class FileStorageControllerTest {
 				.file(fileMultipartFile)
 				.file(dictMultipartFile))
 				.andExpect(status().isOk())
-				.andExpect(content().json("{\"fileName\":\"test_anonymized.txt\", \"dict\":\"test_dict.txt\", \"content\":\"Lorem ipsum dolor sit amet anonymized\"}"));
+				.andExpect(content().json("{\"fileName\":\"test_anonymized.txt\", \"dict\":\"test_dict.txt\", \"content\":\"Lorem ipsum username@domain.com dolor sit amet\"}"));
 
 	}
+
 
 	@Test
 	void should_throw_a_400_error_when_post_url_is_called_with_no_dict_file() throws Exception {
 		final var file = new File("src/test/resources/filesForTests/test.txt");
-
 		FileInputStream fileInputStream = new FileInputStream(file);
-
 		MockMultipartFile fileMultipartFile = new MockMultipartFile("file", file.getName(), "text/plain", fileInputStream);
 
 		MvcResult result = mockMvc.perform(multipart("/anonymize/")
@@ -72,12 +70,11 @@ class FileStorageControllerTest {
 
 	}
 
+
 	@Test
-	void should_throw_a_400_error_when_post_url_is_called_with_no_file() throws Exception {
+	void should_throw_an_error_when_post_url_is_called_with_no_file() throws Exception {
 		final var dictFile = new File("src/test/resources/filesForTests/dictTest.json");
-
 		FileInputStream dictFileInputStream = new FileInputStream(dictFile);
-
 		MockMultipartFile dictMultipartFile = new MockMultipartFile("dictionary", dictFile.getName(), "application/json", dictFileInputStream);
 
 		MvcResult result = mockMvc.perform(multipart("/anonymize/")
@@ -92,10 +89,8 @@ class FileStorageControllerTest {
 
 	@Test
 	void should_return_a_dictionary_file_when_get_url_is_called_with_existing_dict_file() throws Exception {
-
 		final var file = new File("src/test/resources/filesForTests/test.txt");
 		final var dictFile = new File("src/test/resources/filesForTests/dictTest.json");
-
 
 		FileInputStream fileInputStream = new FileInputStream(file);
 		FileInputStream dictFileInputStream = new FileInputStream(dictFile);
@@ -107,12 +102,14 @@ class FileStorageControllerTest {
 						.file(fileMultipartFile)
 						.file(dictMultipartFile))
 				.andExpect(status().isOk())
-				.andExpect(content().json("{\"fileName\":\"test_anonymized.txt\", \"dict\":\"test_dict.txt\", \"content\":\"Lorem ipsum dolor sit amet anonymized\"}"));
+				.andExpect(content().json("{\"fileName\":\"test_anonymized.txt\", \"dict\":\"test_dict.txt\", \"content\":\"Lorem ipsum username@domain.com dolor sit amet\"}"));
 
+
+		String dictReturn = "{\"fileName\":\"test_dict.txt\",\"content\":\"{\\\"(?<=\\\\s|^)[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\\\.[A-Za-z]{2,}(?=\\\\s|$)\\\" : \\\"username@domain.com\\\"}\"}";
 
 		mockMvc.perform(get("/getDict/test_dict.txt"))
 				.andExpect(status().isOk())
-				.andExpect(content().json("{\"fileName\":\"test_dict.txt\", \"content\":\"conversionDictionary\"}"));
+				.andExpect(content().json(dictReturn));
 
 	}
 
@@ -140,8 +137,9 @@ class FileStorageControllerTest {
 				.andExpect(status().isNotFound());
 	}
 
+
 	@Test
-	void should_throw_a_400_error_when_post_url_is_called_with_empty_file() throws Exception {
+	void should_throw_an_exception_when_post_url_is_called_with_empty_file() throws Exception {
 		final var file = new File("src/test/resources/filesForTests/emptyTestFile.txt");
 		final var dictFile = new File("src/test/resources/filesForTests/dictTest.json");
 
@@ -157,5 +155,23 @@ class FileStorageControllerTest {
 						.andExpect(status().isBadRequest()))
 				.isInstanceOf(BadRequestException.class)
 				.hasMessage("Failed to store empty file");
+	}
+
+	@Test
+	void should_throw_an_exception_when_post_url_is_called_with_empty_dict() throws Exception {
+		final var file = new File("src/test/resources/filesForTests/test.txt");
+		final var dictFile = new File("src/test/resources/filesForTests/emptyDict.json");
+
+		FileInputStream fileInputStream = new FileInputStream(file);
+		FileInputStream dictFileInputStream = new FileInputStream(dictFile);
+
+		MockMultipartFile fileMultipartFile = new MockMultipartFile("file", file.getName(), "text/plain", fileInputStream);
+		MockMultipartFile dictMultipartFile = new MockMultipartFile("dictionary", dictFile.getName(), "application/json", dictFileInputStream);
+
+		Assertions.assertThatThrownBy(() -> mockMvc.perform(multipart("/anonymize/")
+						.file(fileMultipartFile)
+						.file(dictMultipartFile))
+						.andExpect(status().isBadRequest()))
+				.hasMessageContaining("Expected non empty content and dictionary");
 	}
 }
