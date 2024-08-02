@@ -49,7 +49,7 @@ class FileStorageControllerTest {
 				.file(fileMultipartFile)
 				.file(dictMultipartFile))
 				.andExpect(status().isOk())
-				.andExpect(content().json("{\"fileName\":\"test_anonymized.txt\", \"dict\":\"test_dict.txt\", \"content\":\"Lorem ipsum username@domain.com dolor sit amet\"}"));
+				.andExpect(content().json("{\"fileName\":\"test_anonymized.txt\", \"dict\":\"test_dict.json\", \"content\":\"Lorem ipsum username@domain.com dolor sit amet\"}"));
 
 	}
 
@@ -102,20 +102,20 @@ class FileStorageControllerTest {
 						.file(fileMultipartFile)
 						.file(dictMultipartFile))
 				.andExpect(status().isOk())
-				.andExpect(content().json("{\"fileName\":\"test_anonymized.txt\", \"dict\":\"test_dict.txt\", \"content\":\"Lorem ipsum username@domain.com dolor sit amet\"}"));
+				.andExpect(content().json("{\"fileName\":\"test_anonymized.txt\", \"dict\":\"test_dict.json\", \"content\":\"Lorem ipsum username@domain.com dolor sit amet\"}"));
 
 
-		String dictReturn = "{\"fileName\":\"test_dict.txt\",\"content\":\"{\\\"(?<=\\\\s|^)[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\\\.[A-Za-z]{2,}(?=\\\\s|$)\\\" : \\\"username@domain.com\\\"}\"}";
+		String dictReturn = "{\"1\" : { \"name\" : \"email\",\"regexp\" : \"(?<=\\\\s|^)[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\\\.[A-Za-z]{2,}(?=\\\\s|$)\",\"replacement\" : \"username@domain.com\"}}";
 
-		mockMvc.perform(get("/getDict/test_dict.txt"))
+		mockMvc.perform(get("/getDictFile/test_dict.json"))
 				.andExpect(status().isOk())
 				.andExpect(content().json(dictReturn));
 
 	}
 
 	@Test
-	void throws_a_bad_request_exception_when_get_url_is_called_with_a_non_existing_dict() throws Exception {
-		Assertions.assertThatThrownBy(() -> mockMvc.perform(get("/getDict/test_non_existing_dict.txt"))
+	void should_throw_a_bad_request_exception_when_get_url_is_called_with_a_non_existing_dict() throws Exception {
+		Assertions.assertThatThrownBy(() -> mockMvc.perform(get("/getDictFile/test_non_existing_dict.txt"))
 				.andExpect(status().isBadRequest()))
 				.isInstanceOf(BadRequestException.class)
 				.hasMessage("Could not read the content of the file: test_non_existing_dict.txt");
@@ -124,7 +124,7 @@ class FileStorageControllerTest {
 
 	@Test
 	void should_throw_a_bad_request_exception_when_get_url_is_called_with_a_non_dict_file() throws Exception {
-		Assertions.assertThatThrownBy(() -> mockMvc.perform(get("/getDict/test_nodict.txt"))
+		Assertions.assertThatThrownBy(() -> mockMvc.perform(get("/getDictFile/test_nodict.txt"))
 						.andExpect(status().isBadRequest()))
 				.isInstanceOf(BadRequestException.class)
 				.hasMessage("This file is not a dictionary");
@@ -156,6 +156,7 @@ class FileStorageControllerTest {
 				.isInstanceOf(BadRequestException.class)
 				.hasMessage("Failed to store empty file");
 	}
+
 
 	@Test
 	void should_throw_an_exception_when_post_url_is_called_with_empty_dict() throws Exception {

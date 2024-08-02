@@ -25,7 +25,7 @@ public class FileStorageController {
                 .body(fileStorageService.anonymizeFile(file, dictionary).toString());
     }
 
-    @GetMapping(value="/getDict/{filename}")
+    @GetMapping(value="/getDictFile/{filename}")
     public ResponseEntity<String> getDict(@PathVariable String filename) throws BadRequestException {
         return ResponseEntity.ok()
                 .body(fileStorageService.getDictFile(filename).toString());

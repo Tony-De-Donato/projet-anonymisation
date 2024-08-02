@@ -1,6 +1,7 @@
 package com.netceler.project_anonymization.fileStorage;
 
 import com.netceler.project_anonymization.anonymizer.AnonymizerService;
+import com.netceler.project_anonymization.dictionary.DictionaryService;
 import org.json.JSONObject;
 import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
@@ -17,15 +18,17 @@ public class FileStorageService {
 
     private final AnonymizerService anonymizerService;
 
-    private final FileStorageProperties fileStorageProperties;
+    private final DictionaryService dictionaryService;
+
 
     private final Path defaultStorage;
     private final Path toAnonymizeStorage;
     private final Path anonymizedStorage;
 
-    FileStorageService(final FileStorageProperties fileStorageProperties) throws BadRequestException {
-        this.fileStorageProperties = fileStorageProperties;
-        this.anonymizerService = new AnonymizerService();
+    FileStorageService(final FileStorageProperties fileStorageProperties, final AnonymizerService anonymizerService, final DictionaryService dictionaryService) throws BadRequestException {
+        this.anonymizerService = anonymizerService;
+        this.dictionaryService = dictionaryService;
+
         if (fileStorageProperties.getDefaultLocation().isBlank() || fileStorageProperties.getToAnonymizeLocation().isBlank() || fileStorageProperties.getAnonymizedLocation().isBlank()) {
             throw new BadRequestException("Storage locations are not set");
         }
@@ -33,13 +36,14 @@ public class FileStorageService {
         this.defaultStorage = Paths.get(fileStorageProperties.getDefaultLocation());
         this.toAnonymizeStorage = Paths.get(fileStorageProperties.getToAnonymizeLocation());
         this.anonymizedStorage = Paths.get(fileStorageProperties.getAnonymizedLocation());
+
         try {
             Files.createDirectories(defaultStorage);
             Files.createDirectories(toAnonymizeStorage);
             Files.createDirectories(anonymizedStorage);
         }
         catch (IOException e) {
-            throw new BadRequestException("Could not initialize storage", e);
+            throw new BadRequestException("Could not initialize storage");
         }
     }
 
@@ -74,12 +78,14 @@ public class FileStorageService {
             Path destinationFile = path.resolve(filename)
                     .normalize().toAbsolutePath();
             assertNotOutsideStorage(path, destinationFile);
-            Files.write(destinationFile, content.getBytes());
+            try (BufferedWriter writer = Files.newBufferedWriter(destinationFile)) {
+                writer.write(content);
+            }
+            } catch (IOException e) {
+                throw new BadRequestException("Failed to store file.");
+            }
         }
-        catch (IOException e) {
-            throw new BadRequestException("Failed to store file.");
-        }
-    }
+
 
     public void assertNotOutsideStorage(Path path, Path destinationFile) throws BadRequestException {
         if (!destinationFile.getParent().equals(path.toAbsolutePath())) {
@@ -121,7 +127,7 @@ public class FileStorageService {
         }
         try {
             String content = loadFileContent(fileName, anonymizedStorage);
-            return new JSONObject().put("fileName", fileName).put("content", content);
+            return new JSONObject(content);
         }
         catch (Exception e) {
             throw new BadRequestException("Could not read the content of the file: "+ fileName);
@@ -150,6 +156,11 @@ public class FileStorageService {
         return parts[0] + string + "." + parts[1];
     }
 
+    public String modifyExtension(String filename, String extensionWithDot) {
+        String[] parts = filename.split("\\.");
+        return parts[0] + extensionWithDot;
+    }
+
 
 
     public JSONObject anonymizeFile(MultipartFile file, MultipartFile conversionDictionary) throws BadRequestException {
@@ -160,13 +171,14 @@ public class FileStorageService {
             String fileContent = loadFileContent(Objects.requireNonNull(file.getOriginalFilename()), toAnonymizeStorage);
             String dictContent = loadFileContent(Objects.requireNonNull(conversionDictionary.getOriginalFilename()), toAnonymizeStorage);
 
-            String anonymizedContent = anonymizerService.handleAnonymization(fileContent, dictContent);
+            String anonymizedContent = anonymizerService.handleAnonymization(fileContent, dictionaryService.jsonStringToDictList(dictContent));
 
             String newFileName = addStringBeforeExtension(file.getOriginalFilename(), "_anonymized");
-            String newDictName = addStringBeforeExtension(file.getOriginalFilename(), "_dict");
+            String newDictName = modifyExtension(addStringBeforeExtension(file.getOriginalFilename(), "_dict"), ".json");
 
             storeFromJson(new JSONObject().put("filename", newFileName).put("content", anonymizedContent), anonymizedStorage);
             storeFromJson(new JSONObject().put("filename", newDictName).put("content", dictContent), anonymizedStorage);
+            dictionaryService.recordJsonFileOrUpdateExisting(newDictName, dictContent);
 
             deleteFileIfExists(file.getOriginalFilename(), toAnonymizeStorage);
             deleteFileIfExists(conversionDictionary.getOriginalFilename(), toAnonymizeStorage);
