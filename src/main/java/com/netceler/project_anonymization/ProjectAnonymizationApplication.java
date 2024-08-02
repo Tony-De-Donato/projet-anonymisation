@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class ProjectAnonymizationApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(ProjectAnonymizationApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(ProjectAnonymizationApplication.class, args);
+    }
 
 }

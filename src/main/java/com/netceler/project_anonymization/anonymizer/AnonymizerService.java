@@ -9,10 +9,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-
 @Service
 public class AnonymizerService {
-
 
     public String handleAnonymization(String content, List<Dictionary> dict) {
 
@@ -33,7 +31,8 @@ public class AnonymizerService {
             }
             return result;
         } catch (PatternSyntaxException e) {
-            throw new PatternSyntaxException("Invalid dictionary key, can't compile regex", e.getPattern(), e.getIndex());
+            throw new PatternSyntaxException("Invalid dictionary key, can't compile regex", e.getPattern(),
+                    e.getIndex());
         }
     }
 
@@ -45,15 +44,15 @@ public class AnonymizerService {
         }
     }
 
-
     public void checkBothContent(String content, List<Dictionary> dictionary) {
         if (content == null || dictionary == null || content.isBlank() || dictionary.isEmpty()) {
             throw new IllegalArgumentException("Expected non empty content and dictionary");
         }
-        if (dictionary.stream().anyMatch(dict -> dict.name() == null || dict.regexp() == null || dict.replacement() == null)) {
+        if (dictionary.stream()
+                .anyMatch(
+                        dict -> dict.name() == null || dict.regexp() == null || dict.replacement() == null)) {
             throw new IllegalArgumentException("Expected non empty content and dictionary");
         }
     }
-
 
 }

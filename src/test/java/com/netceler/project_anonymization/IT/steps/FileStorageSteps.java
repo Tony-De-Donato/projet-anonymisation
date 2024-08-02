@@ -1,26 +1,20 @@
 package com.netceler.project_anonymization.IT.steps;
 
-import com.github.dockerjava.transport.DockerHttpClient;
 import com.netceler.project_anonymization.IT.configurations.SpringCucumberTest;
 import com.netceler.project_anonymization.fileStorage.FileStorageProperties;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.apache.coyote.Response;
 import org.assertj.core.api.Assertions;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.http.HttpClient;
 
 public class FileStorageSteps extends SpringCucumberTest {
 
@@ -37,19 +31,16 @@ public class FileStorageSteps extends SpringCucumberTest {
     }
 
     @When("I post two files {string} and {string} for anonymize")
-    public void i_post_a_file_text_for_anonymize(String fileName,String dictName) throws IOException {
-
+    public void i_post_a_file_text_for_anonymize(String fileName, String dictName) throws IOException {
 
         final var fileToSend = new File("src/test/resources/filesForTests/" + fileName);
         final var dictFile = new File("src/test/resources/filesForTests/" + dictName);
-
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", fileToSend);
         body.add("dictionary", dictFile);
 
-        HttpEntity<MultiValueMap<String, Object>> requestEntity
-                = new HttpEntity<>(body);
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body);
 
         returnedFile = RestClient.builder()
                 .baseUrl("http://localhost:" + port)
@@ -59,11 +50,7 @@ public class FileStorageSteps extends SpringCucumberTest {
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(requestEntity);
 
-
     }
-
-
-
 
     @Then("I should get the file {string} anonymized")
     public void i_should_get_the_file_text_anonymized(String fileName) {

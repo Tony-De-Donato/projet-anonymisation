@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface DictionaryRepository extends JpaRepository<DictionaryEntity, Long> {
@@ -22,15 +21,10 @@ public interface DictionaryRepository extends JpaRepository<DictionaryEntity, Lo
     @Query("select dictionary from DictionaryEntity dictionary")
     List<DictionaryEntity> findAllRecords();
 
-
     @Query("select dictionary from DictionaryEntity dictionary where dictionary.defaultPattern = true")
     List<DictionaryEntity> findDefaultPatterns();
 
-
-
     @Query("select dictionary from DictionaryEntity dictionary where dictionary.dictFileName = ?1 and dictionary.name = ?2")
     List<DictionaryEntity> findByDictFileNameAndName(String dictFileName, String name);
-
-
 
 }

@@ -1,6 +1,5 @@
 package com.netceler.project_anonymization.dictionary;
 
-
 import com.netceler.project_anonymization.anonymizer.AnonymizerService;
 import org.apache.coyote.BadRequestException;
 import org.json.JSONObject;
@@ -21,8 +20,6 @@ public class DictionaryService {
         this.dictionaryRepository = dictionaryRepository;
         this.anonymizerService = anonymizerService;
     }
-
-
 
     public List<Dictionary> getAllDefaultPatterns() {
         try {
@@ -61,14 +58,14 @@ public class DictionaryService {
             List<DictionaryEntity> dictionaryEntities = dictionaryRepository.findByDictFileName(dictFileName);
             List<Dictionary> dictionaries = new ArrayList<>();
             for (DictionaryEntity entity : dictionaryEntities) {
-                dictionaries.add(new Dictionary(entity.getName(), entity.getRegexp(), entity.getReplacement()));
+                dictionaries.add(
+                        new Dictionary(entity.getName(), entity.getRegexp(), entity.getReplacement()));
             }
             return dictionaries;
         } catch (Exception e) {
             throw new RuntimeException("Error retrieving dictionaries: " + e.getMessage(), e);
         }
     }
-
 
     public List<Dictionary> dictEntityListToDictList(List<DictionaryEntity> dictionaryEntities) {
         List<Dictionary> dictionaries = new ArrayList<>();
@@ -99,11 +96,12 @@ public class DictionaryService {
             for (Iterator<String> iter = jsonObject.keys(); iter.hasNext(); ) {
                 String key = iter.next();
                 JSONObject value = jsonObject.getJSONObject(key);
-                dictionaryList.add(new Dictionary(value.getString("name"), value.getString("regexp"), value.getString("replacement")));
+                dictionaryList.add(new Dictionary(value.getString("name"), value.getString("regexp"),
+                        value.getString("replacement")));
             }
             return dictionaryList;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to get dictionary list from JSON :"+e.getMessage(), e);
+            throw new RuntimeException("Failed to get dictionary list from JSON :" + e.getMessage(), e);
         }
     }
 
@@ -112,7 +110,8 @@ public class DictionaryService {
             List<Dictionary> dictionaryList = jsonStringToDictList(content);
             List<DictionaryEntity> dictionaryEntities = new ArrayList<>();
             for (Dictionary dict : dictionaryList) {
-                List<DictionaryEntity> dictionaryEntity = dictionaryRepository.findByDictFileNameAndName(filename, dict.name());
+                List<DictionaryEntity> dictionaryEntity = dictionaryRepository.findByDictFileNameAndName(
+                        filename, dict.name());
                 if (dictionaryEntity.isEmpty()) {
                     DictionaryEntity newEntity = new DictionaryEntity();
                     newEntity.setName(dict.name());
