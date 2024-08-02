@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="1" author="TDEDONATO">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="dictionaries"/>
+            </not>
+        </preConditions>
+        <createTable tableName="dictionaries">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="regexp" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="replacement" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dictfile_name" type="TEXT"/>
+            <column name="default_pattern" type="BOOLEAN" defaultValueBoolean="false"/>
+        </createTable>
+    </changeSet>
+
+
+</databaseChangeLog>

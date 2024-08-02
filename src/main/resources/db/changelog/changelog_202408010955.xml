@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="2" author="TDEDONATO">
+        <insert tableName="dictionaries">
+            <column name="name" value="testDict"/>
+            <column name="regexp" value="testToReplace"/>
+            <column name="replacement" value="testReplaced"/>
+            <column name="dictfile_name" value="test_dict.json"/>
+            <column name="default_pattern" value="false"/>
+        </insert>
+        <insert tableName="dictionaries">
+            <column name="name" value="testDictDefault"/>
+            <column name="regexp" value="testToReplaceDefault"/>
+            <column name="replacement" value="testReplacedDefault"/>
+            <column name="dictfile_name" value="testDefault_dict.json"/>
+            <column name="default_pattern" value="true"/>
+        </insert>
+        
+
+    </changeSet>
+</databaseChangeLog>
