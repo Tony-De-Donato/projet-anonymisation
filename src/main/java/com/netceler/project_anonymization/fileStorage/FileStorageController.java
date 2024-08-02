@@ -19,14 +19,16 @@ public class FileStorageController {
     }
 
     @PostMapping(value = "/anonymize/")
-    public ResponseEntity<String> anonymize(@RequestParam("file") MultipartFile file,
-            @RequestParam("dictionary") MultipartFile dictionary) throws BadRequestException {
+    public ResponseEntity<String> anonymize(@RequestParam("file") final MultipartFile file,
+            @RequestParam("dictionary") final MultipartFile dictionary) throws BadRequestException {
         return ResponseEntity.ok().body(fileStorageService.anonymizeFile(file, dictionary).toString());
     }
 
     @GetMapping(value = "/getDictFile/{filename}")
-    public ResponseEntity<String> getDict(@PathVariable String filename) throws BadRequestException {
+    public ResponseEntity<String> getDict(@PathVariable final String filename) throws BadRequestException {
         return ResponseEntity.ok().body(fileStorageService.getDictFile(filename).toString());
     }
+
+    //TODO don't use ResponseEntity it's unused
 
 }

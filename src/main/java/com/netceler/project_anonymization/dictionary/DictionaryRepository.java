@@ -18,9 +18,6 @@ public interface DictionaryRepository extends JpaRepository<DictionaryEntity, Lo
     @Query("select dictionary from DictionaryEntity dictionary where dictionary.dictFileName = ?1")
     List<DictionaryEntity> findByDictFileName(String dictFileName);
 
-    @Query("select dictionary from DictionaryEntity dictionary")
-    List<DictionaryEntity> findAllRecords();
-
     @Query("select dictionary from DictionaryEntity dictionary where dictionary.defaultPattern = true")
     List<DictionaryEntity> findDefaultPatterns();
 

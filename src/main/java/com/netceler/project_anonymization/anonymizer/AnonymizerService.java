@@ -12,39 +12,39 @@ import java.util.regex.PatternSyntaxException;
 @Service
 public class AnonymizerService {
 
-    public String handleAnonymization(String content, List<Dictionary> dict) {
+    public String handleAnonymization(final String content, final List<Dictionary> dict) {
 
         checkBothContent(content, dict);
 
         return anonymiseStringWithDictList(content, dict);
     }
 
-    public String anonymiseStringWithDictList(String content, List<Dictionary> dictionary) {
+    public String anonymiseStringWithDictList(final String content, final List<Dictionary> dictionary) {
         try {
             String result = content;
-            for (Dictionary dict : dictionary) {
-                String regex = dict.regexp();
-                String replacement = dict.replacement();
-                Pattern compiledRegex = Pattern.compile(regex);
-                Matcher matcher = compiledRegex.matcher(result);
+            for (final Dictionary dict : dictionary) {
+                final String regex = dict.regexp();
+                final String replacement = dict.replacement();
+                final Pattern compiledRegex = Pattern.compile(regex);
+                final Matcher matcher = compiledRegex.matcher(result);
                 result = matcher.replaceAll(replacement);
             }
             return result;
-        } catch (PatternSyntaxException e) {
+        } catch (final PatternSyntaxException e) {
             throw new PatternSyntaxException("Invalid dictionary key, can't compile regex", e.getPattern(),
                     e.getIndex());
         }
     }
 
-    public JSONObject stringToJson(String toConvert) throws IllegalArgumentException {
+    public JSONObject stringToJson(final String toConvert) throws IllegalArgumentException {
         try {
             return new JSONObject(toConvert);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new IllegalArgumentException(e.getMessage() + " : " + toConvert);
         }
     }
 
-    public void checkBothContent(String content, List<Dictionary> dictionary) {
+    public void checkBothContent(final String content, final List<Dictionary> dictionary) {
         if (content == null || dictionary == null || content.isBlank() || dictionary.isEmpty()) {
             throw new IllegalArgumentException("Expected non empty content and dictionary");
         }
@@ -53,6 +53,8 @@ public class AnonymizerService {
                         dict -> dict.name() == null || dict.regexp() == null || dict.replacement() == null)) {
             throw new IllegalArgumentException("Expected non empty content and dictionary");
         }
+
+        // TODO check content with two method separately
     }
 
 }

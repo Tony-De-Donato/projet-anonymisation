@@ -2,32 +2,38 @@ package com.netceler.project_anonymization.dictionary;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(classes = { DictionaryController.class, DictionaryService.class })
 @AutoConfigureMockMvc
 public class DictionaryControllerTest {
 
     @Autowired
     MockMvc mockMvc;
 
+    @MockBean
+    DictionaryService dictionaryService;
+
     @Autowired
     DictionaryController dictionaryController;
 
     @Test
     void should_return_a_json_list_of_dict_when_getDictByRuleName_is_called() throws Exception {
+        Mockito.when(dictionaryService.dictListToJsonString(any())).thenReturn("toto");
         mockMvc.perform(get("/getDictByRuleName/testDict/true"))
                 .andExpect(status().isOk())
-                .andExpect(content().json(
-                        "{\"1\":{\"regexp\":\"testToReplace\",\"name\":\"testDict\",\"replacement\":\"testReplaced\"}}"));
+                .andExpect(content().string("toto"));
     }
 
     @Test
@@ -48,9 +54,9 @@ public class DictionaryControllerTest {
 
     @Test
     void should_return_a_json_list_of_dict_when_getAllDict_is_called() throws Exception {
-        MvcResult result = mockMvc.perform(get("/getAllDict")).andExpect(status().isOk()).andReturn();
+        final MvcResult result = mockMvc.perform(get("/getAllDict")).andExpect(status().isOk()).andReturn();
 
-        String jsonResponse = result.getResponse().getContentAsString();
+        final String jsonResponse = result.getResponse().getContentAsString();
         Assertions.assertThat(jsonResponse)
                 .contains(
                         "{\"regexp\":\"testToReplace\",\"name\":\"testDict\",\"replacement\":\"testReplaced\"}");
@@ -79,11 +85,11 @@ public class DictionaryControllerTest {
     @Test
     void should_return_a_well_formated_json_list_when_getDictByRuleName_is_called_with_accurate_param_false()
             throws Exception {
-        MvcResult result = mockMvc.perform(get("/getDictByFileName/test_dict.json"))
+        final MvcResult result = mockMvc.perform(get("/getDictByFileName/test_dict.json"))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        String jsonResponse = result.getResponse().getContentAsString();
+        final String jsonResponse = result.getResponse().getContentAsString();
         Assertions.assertThat(jsonResponse)
                 .contains(
                         "{\"regexp\":\"(?<=\\\\s|^)[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\\\.[A-Za-z]{2,}(?=\\\\s|$)\",\"name\":\"email\",\"replacement\":\"username@domain.com\"}");

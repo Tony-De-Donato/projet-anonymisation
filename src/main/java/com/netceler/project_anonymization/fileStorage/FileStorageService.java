@@ -50,117 +50,120 @@ public class FileStorageService {
             Files.createDirectories(defaultStorage);
             Files.createDirectories(toAnonymizeStorage);
             Files.createDirectories(anonymizedStorage);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new BadRequestException("Could not initialize storage");
         }
     }
 
-    public void storeFile(MultipartFile file, Path path) throws BadRequestException {
+    public void storeFile(final MultipartFile file, final Path path) throws BadRequestException {
         try {
             if (file.isEmpty()) {
                 throw new BadRequestException("Failed to store empty file");
             }
-            Path destinationFile = path.resolve(Objects.requireNonNull(file.getOriginalFilename()))
+            final Path destinationFile = path.resolve(Objects.requireNonNull(file.getOriginalFilename()))
                     .normalize()
                     .toAbsolutePath();
             assertNotOutsideStorage(path, destinationFile);
-            try (InputStream inputStream = file.getInputStream()) {
+            try (final InputStream inputStream = file.getInputStream()) {
                 Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new BadRequestException("Failed to store file");
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new BadRequestException(e.getMessage());
         }
+
+        // TODO catch in catch ?
     }
 
-    public void storeFromJson(JSONObject file, Path path) throws BadRequestException {
+    public void storeFromJson(final JSONObject file, final Path path) throws BadRequestException {
         try {
-            String filename = file.getString("filename");
-            String content = file.getString("content");
-            Path destinationFile = path.resolve(filename).normalize().toAbsolutePath();
+            final String filename = file.getString("filename");
+            final String content = file.getString("content");
+            final Path destinationFile = path.resolve(filename).normalize().toAbsolutePath();
             assertNotOutsideStorage(path, destinationFile);
-            try (BufferedWriter writer = Files.newBufferedWriter(destinationFile)) {
+            try (final BufferedWriter writer = Files.newBufferedWriter(destinationFile)) {
                 writer.write(content);
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new BadRequestException("Failed to store file.");
         }
     }
 
-    public void assertNotOutsideStorage(Path path, Path destinationFile) throws BadRequestException {
+    public void assertNotOutsideStorage(final Path path, final Path destinationFile)
+            throws BadRequestException {
         if (!destinationFile.getParent().equals(path.toAbsolutePath())) {
             throw new BadRequestException("Cannot store file outside current directory.");
         }
     }
 
-    public Path load(String filename, Path path) throws BadRequestException {
+    public Path load(final String filename, final Path path) throws BadRequestException {
         try {
             return path.resolve(filename);
-        } catch (InvalidPathException e) {
+        } catch (final InvalidPathException e) {
             throw new BadRequestException("Can't find file :" + filename);
         }
     }
 
-    public String loadFileContent(String fileName, Path path) throws BadRequestException {
+    public String loadFileContent(final String fileName, final Path path) throws BadRequestException {
         if (fileName.contains("..")) {
             throw new BadRequestException("Cannot read file with relative path outside current directory");
         }
         try {
-            Path file = load(fileName, path);
+            final Path file = load(fileName, path);
             return new String(Files.readAllBytes(file));
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new BadRequestException("Could not read the content of the file: " + fileName);
         }
     }
 
-    public JSONObject getDictFile(String fileName) throws BadRequestException {
+    public JSONObject getDictFile(final String fileName) throws BadRequestException {
         if (!fileName.contains("_dict")) {
             throw new BadRequestException("This file is not a dictionary");
         }
         try {
-            String content = loadFileContent(fileName, anonymizedStorage);
+            final String content = loadFileContent(fileName, anonymizedStorage);
             return new JSONObject(content);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new BadRequestException("Could not read the content of the file: " + fileName);
         }
 
     }
 
-    public void deleteFileIfExists(String filename, Path path) throws BadRequestException {
+    public void deleteFileIfExists(final String filename, final Path path) throws BadRequestException {
         try {
             Files.deleteIfExists(path.resolve(filename));
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new BadRequestException("Failed to delete file", e);
         }
     }
 
-    public String addStringBeforeExtension(String filename, String string) {
-        String[] parts = filename.split("\\.");
+    public String addStringBeforeExtension(final String filename, final String string) {
+        final String[] parts = filename.split("\\.");
         return parts[0] + string + "." + parts[1];
     }
 
-    public String modifyExtension(String filename, String extensionWithDot) {
-        String[] parts = filename.split("\\.");
+    public String modifyExtension(final String filename, final String extensionWithDot) {
+        final String[] parts = filename.split("\\.");
         return parts[parts.length - 2] + extensionWithDot;
     }
 
-    public JSONObject anonymizeFile(MultipartFile file, MultipartFile conversionDictionary)
+    public JSONObject anonymizeFile(final MultipartFile file, final MultipartFile conversionDictionary)
             throws BadRequestException {
         storeFile(file, toAnonymizeStorage);
         storeFile(conversionDictionary, toAnonymizeStorage);
 
         try {
-            String fileContent = loadFileContent(Objects.requireNonNull(file.getOriginalFilename()),
+            final String fileContent = loadFileContent(Objects.requireNonNull(file.getOriginalFilename()),
                     toAnonymizeStorage);
-            String dictContent = loadFileContent(
+            final String dictContent = loadFileContent(
                     Objects.requireNonNull(conversionDictionary.getOriginalFilename()), toAnonymizeStorage);
 
-            String anonymizedContent = anonymizerService.handleAnonymization(fileContent,
+            final String anonymizedContent = anonymizerService.handleAnonymization(fileContent,
                     dictionaryService.jsonStringToDictList(dictContent));
 
-            String newFileName = addStringBeforeExtension(file.getOriginalFilename(), "_anonymized");
-            String newDictName = modifyExtension(
+            final String newFileName = addStringBeforeExtension(file.getOriginalFilename(), "_anonymized");
+            final String newDictName = modifyExtension(
                     addStringBeforeExtension(file.getOriginalFilename(), "_dict"), ".json");
 
             storeFromJson(new JSONObject().put("filename", newFileName).put("content", anonymizedContent),
@@ -176,10 +179,10 @@ public class FileStorageService {
                     .put("dict", newDictName)
                     .put("content", anonymizedContent);
 
-        } catch (BadRequestException e) {
+        } catch (final BadRequestException e) {
             throw new BadRequestException("Failed to anonymize file");
         }
-
+        //TODO too long
     }
 
 }

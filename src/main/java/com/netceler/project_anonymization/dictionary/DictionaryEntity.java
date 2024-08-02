@@ -1,12 +1,15 @@
 package com.netceler.project_anonymization.dictionary;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
 
 @Entity
 @Table(name = "dictionaries")
@@ -30,6 +33,7 @@ public class DictionaryEntity {
 
     @Column(name = "dictfile_name")
     String dictFileName;
+    // TODO find unicity of a file without their name
 
     @Column(name = "default_pattern")
     Boolean defaultPattern;

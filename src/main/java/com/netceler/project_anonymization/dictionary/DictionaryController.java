@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 public class DictionaryController {
 
@@ -16,19 +18,21 @@ public class DictionaryController {
     }
 
     @GetMapping(value = "/getDictByRuleName/{name}/{accurate}")
-    public ResponseEntity<String> getDictByName(@PathVariable String name, @PathVariable Boolean accurate)
-            throws BadRequestException {
+    public ResponseEntity<String> getDictByName(@PathVariable final String name,
+            @PathVariable final Boolean accurate) throws BadRequestException {
         return ResponseEntity.ok()
                 .body(dictionaryService.dictListToJsonString(
                         dictionaryService.getDictionaryByName(name, accurate)));
     }
 
+    //TODO use primitif type when you can
+
     @GetMapping(value = "/getDictByFileName/{filename}")
-    public ResponseEntity<String> getDictByFileName(@PathVariable String filename)
+    public List<Dictionary> getDictByFileName(@PathVariable final String filename)
             throws BadRequestException {
-        return ResponseEntity.ok()
-                .body(dictionaryService.dictListToJsonString(
-                        dictionaryService.getDictionaryByFileName(filename)));
+        return dictionaryService.getDictionaryByFileName(filename);
+
+        //TODO DOn't use Json object for stringify your list of Dictionary
     }
 
     @GetMapping(value = "/getAllDefaultDict")

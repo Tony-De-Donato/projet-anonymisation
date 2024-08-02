@@ -16,70 +16,67 @@ public class DictionaryService {
 
     private final AnonymizerService anonymizerService;
 
-    public DictionaryService(DictionaryRepository dictionaryRepository, AnonymizerService anonymizerService) {
+    public DictionaryService(final DictionaryRepository dictionaryRepository,
+            final AnonymizerService anonymizerService) {
         this.dictionaryRepository = dictionaryRepository;
         this.anonymizerService = anonymizerService;
     }
 
     public List<Dictionary> getAllDefaultPatterns() {
         try {
-            List<DictionaryEntity> dictionaryEntities = dictionaryRepository.findDefaultPatterns();
+            final List<DictionaryEntity> dictionaryEntities = dictionaryRepository.findDefaultPatterns();
             return dictEntityListToDictList(dictionaryEntities);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException("Error retrieving default patterns: " + e.getMessage(), e);
         }
+
+        //TODO Throw exception smartly don't catch any exception, and don't throw Runtime Exception
     }
 
-    public List<Dictionary> getDictionaryByName(String name, Boolean accurate) throws BadRequestException {
-        List<DictionaryEntity> dictionaryEntities;
+    public List<Dictionary> getDictionaryByName(final String name, final boolean accurate)
+            throws BadRequestException {
         try {
-            if (accurate) {
-                dictionaryEntities = dictionaryRepository.findByName(name);
-            } else {
-                dictionaryEntities = dictionaryRepository.findByNameLike(name);
-            }
-            return dictEntityListToDictList(dictionaryEntities);
-        } catch (Exception e) {
+            return dictEntityListToDictList(accurate
+                    ? dictionaryRepository.findByName(name)
+                    : dictionaryRepository.findByNameLike(name));
+        } catch (final Exception e) {
             throw new BadRequestException("Error retrieving dictionaries: " + e.getMessage());
         }
     }
 
     public List<Dictionary> getAllDictionaries() {
         try {
-            List<DictionaryEntity> dictionaryEntities = dictionaryRepository.findAllRecords();
+            final List<DictionaryEntity> dictionaryEntities = dictionaryRepository.findAll();
             return dictEntityListToDictList(dictionaryEntities);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException("Error retrieving dictionaries: " + e.getMessage(), e);
         }
     }
 
-    public List<Dictionary> getDictionaryByFileName(String dictFileName) {
+    public List<Dictionary> getDictionaryByFileName(final String dictFileName) {
         try {
-            List<DictionaryEntity> dictionaryEntities = dictionaryRepository.findByDictFileName(dictFileName);
-            List<Dictionary> dictionaries = new ArrayList<>();
-            for (DictionaryEntity entity : dictionaryEntities) {
+            final List<DictionaryEntity> dictionaryEntities = dictionaryRepository.findByDictFileName(
+                    dictFileName);
+            final List<Dictionary> dictionaries = new ArrayList<>();
+            for (final DictionaryEntity entity : dictionaryEntities) {
                 dictionaries.add(
                         new Dictionary(entity.getName(), entity.getRegexp(), entity.getReplacement()));
             }
             return dictionaries;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException("Error retrieving dictionaries: " + e.getMessage(), e);
         }
     }
 
-    public List<Dictionary> dictEntityListToDictList(List<DictionaryEntity> dictionaryEntities) {
-        List<Dictionary> dictionaries = new ArrayList<>();
-        for (DictionaryEntity entity : dictionaryEntities) {
-            dictionaries.add(new Dictionary(entity.getName(), entity.getRegexp(), entity.getReplacement()));
-        }
-        return dictionaries;
+    public List<Dictionary> dictEntityListToDictList(final List<DictionaryEntity> dictionaryEntities) {
+        return dictionaryEntities.stream().map(Dictionary::from).toList();
     }
 
-    public String dictListToJsonString(List<Dictionary> dictionaryList) {
-        JSONObject jsonObject = new JSONObject();
+    public String dictListToJsonString(final List<Dictionary> dictionaryList) {
+        final JSONObject jsonObject = new JSONObject();
         int index = 1;
-        for (Dictionary dict : dictionaryList) {
-            JSONObject dictObject = new JSONObject();
+        for (final Dictionary dict : dictionaryList) {
+            final JSONObject dictObject = new JSONObject();
             dictObject.put("name", dict.name());
             dictObject.put("regexp", dict.regexp());
             dictObject.put("replacement", dict.replacement());
@@ -89,31 +86,33 @@ public class DictionaryService {
         return jsonObject.toString();
     }
 
-    public List<Dictionary> jsonStringToDictList(String content) {
+    public List<Dictionary> jsonStringToDictList(final String content) {
+        //TODO use objectMapper --> in your context
+
         try {
-            JSONObject jsonObject = anonymizerService.stringToJson(content);
-            List<Dictionary> dictionaryList = new ArrayList<>();
-            for (Iterator<String> iter = jsonObject.keys(); iter.hasNext(); ) {
-                String key = iter.next();
-                JSONObject value = jsonObject.getJSONObject(key);
+            final JSONObject jsonObject = anonymizerService.stringToJson(content);
+            final List<Dictionary> dictionaryList = new ArrayList<>();
+            for (final Iterator<String> iter = jsonObject.keys(); iter.hasNext(); ) {
+                final String key = iter.next();
+                final JSONObject value = jsonObject.getJSONObject(key);
                 dictionaryList.add(new Dictionary(value.getString("name"), value.getString("regexp"),
                         value.getString("replacement")));
             }
             return dictionaryList;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException("Failed to get dictionary list from JSON :" + e.getMessage(), e);
         }
     }
 
-    public void recordJsonFileOrUpdateExisting(String filename, String content) {
+    public void recordJsonFileOrUpdateExisting(final String filename, final String content) {
         try {
-            List<Dictionary> dictionaryList = jsonStringToDictList(content);
-            List<DictionaryEntity> dictionaryEntities = new ArrayList<>();
-            for (Dictionary dict : dictionaryList) {
-                List<DictionaryEntity> dictionaryEntity = dictionaryRepository.findByDictFileNameAndName(
+            final List<Dictionary> dictionaryList = jsonStringToDictList(content);
+            final List<DictionaryEntity> dictionaryEntities = new ArrayList<>();
+            dictionaryList.forEach(dict -> {
+                final List<DictionaryEntity> dictionaryEntity = dictionaryRepository.findByDictFileNameAndName(
                         filename, dict.name());
                 if (dictionaryEntity.isEmpty()) {
-                    DictionaryEntity newEntity = new DictionaryEntity();
+                    final DictionaryEntity newEntity = new DictionaryEntity();
                     newEntity.setName(dict.name());
                     newEntity.setRegexp(dict.regexp());
                     newEntity.setReplacement(dict.replacement());
@@ -121,14 +120,16 @@ public class DictionaryService {
                     newEntity.setDictFileName(filename);
                     dictionaryEntities.add(newEntity);
                 } else {
-                    DictionaryEntity entity = dictionaryEntity.getFirst();
+                    final DictionaryEntity entity = dictionaryEntity.getFirst();
                     entity.setRegexp(dict.regexp());
                     entity.setReplacement(dict.replacement());
                     dictionaryEntities.add(entity);
                 }
-            }
+                // TODO create another function for this long function
+            });
+
             dictionaryRepository.saveAll(dictionaryEntities);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException("Failed to record JSON file: " + e.getMessage(), e);
         }
     }
