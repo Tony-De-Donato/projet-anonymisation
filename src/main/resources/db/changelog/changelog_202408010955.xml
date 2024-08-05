@@ -11,6 +11,7 @@
             <column name="replacement" value="testReplaced"/>
             <column name="dictfile_name" value="test_dict.json"/>
             <column name="default_pattern" value="false"/>
+            <column name="uniqueness" value="sha256_1"/>
         </insert>
         <insert tableName="dictionaries">
             <column name="name" value="testDictDefault"/>
@@ -18,6 +19,15 @@
             <column name="replacement" value="testReplacedDefault"/>
             <column name="dictfile_name" value="testDefault_dict.json"/>
             <column name="default_pattern" value="true"/>
+            <column name="uniqueness" value="sha256_2"/>
+        </insert>
+        <insert tableName="dictionaries">
+            <column name="name" value="email"/>
+            <column name="regexp" value="(?&lt;=\s|^)[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?=\s|$)"/>
+            <column name="replacement" value="username@domain.com"/>
+            <column name="dictfile_name" value="email_dict.json"/>
+            <column name="default_pattern" value="true"/>
+            <column name="uniqueness" value="sha256_3"/>
         </insert>
 
 

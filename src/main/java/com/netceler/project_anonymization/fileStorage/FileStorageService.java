@@ -24,8 +24,6 @@ public class FileStorageService {
 
     private final DictionaryService dictionaryService;
 
-    private final Path defaultStorage;
-
     private final Path toAnonymizeStorage;
 
     private final Path anonymizedStorage;
@@ -36,18 +34,10 @@ public class FileStorageService {
         this.anonymizerService = anonymizerService;
         this.dictionaryService = dictionaryService;
 
-        if (fileStorageProperties.getDefaultLocation()
-                .isBlank() || fileStorageProperties.getToAnonymizeLocation()
-                .isBlank() || fileStorageProperties.getAnonymizedLocation().isBlank()) {
-            throw new BadRequestException("Storage locations are not set");
-        }
-
-        this.defaultStorage = Paths.get(fileStorageProperties.getDefaultLocation());
         this.toAnonymizeStorage = Paths.get(fileStorageProperties.getToAnonymizeLocation());
         this.anonymizedStorage = Paths.get(fileStorageProperties.getAnonymizedLocation());
 
         try {
-            Files.createDirectories(defaultStorage);
             Files.createDirectories(toAnonymizeStorage);
             Files.createDirectories(anonymizedStorage);
         } catch (final IOException e) {
@@ -170,7 +160,7 @@ public class FileStorageService {
                     anonymizedStorage);
             storeFromJson(new JSONObject().put("filename", newDictName).put("content", dictContent),
                     anonymizedStorage);
-            dictionaryService.recordJsonFileOrUpdateExisting(newDictName, dictContent);
+            dictionaryService.recordFromJsonFileOrUpdateExisting(newDictName, dictContent);
 
             deleteFileIfExists(file.getOriginalFilename(), toAnonymizeStorage);
             deleteFileIfExists(conversionDictionary.getOriginalFilename(), toAnonymizeStorage);

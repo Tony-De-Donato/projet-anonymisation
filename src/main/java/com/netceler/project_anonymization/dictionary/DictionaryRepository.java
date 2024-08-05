@@ -24,4 +24,7 @@ public interface DictionaryRepository extends JpaRepository<DictionaryEntity, Lo
     @Query("select dictionary from DictionaryEntity dictionary where dictionary.dictFileName = ?1 and dictionary.name = ?2")
     List<DictionaryEntity> findByDictFileNameAndName(String dictFileName, String name);
 
+    @Query("select dictionary from DictionaryEntity dictionary where dictionary.dictFileName = ?1 and dictionary.name = ?2 and dictionary.regexp = ?3")
+    List<DictionaryEntity> findByUniqueness(String Uniqueness);
+
 }

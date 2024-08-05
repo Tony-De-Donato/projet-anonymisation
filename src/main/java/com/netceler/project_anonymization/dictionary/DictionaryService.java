@@ -1,5 +1,6 @@
 package com.netceler.project_anonymization.dictionary;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netceler.project_anonymization.anonymizer.AnonymizerService;
 import org.apache.coyote.BadRequestException;
 import org.json.JSONObject;
@@ -15,6 +16,8 @@ public class DictionaryService {
     private final DictionaryRepository dictionaryRepository;
 
     private final AnonymizerService anonymizerService;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public DictionaryService(final DictionaryRepository dictionaryRepository,
             final AnonymizerService anonymizerService) {
@@ -72,6 +75,23 @@ public class DictionaryService {
         return dictionaryEntities.stream().map(Dictionary::from).toList();
     }
 
+    public DictionaryEntity dictToDictEntity(final Dictionary dict, String filename, String hash) {
+        final DictionaryEntity entity = new DictionaryEntity();
+        entity.setName(dict.name());
+        entity.setRegexp(dict.regexp());
+        entity.setReplacement(dict.replacement());
+        entity.setDefaultPattern(false);
+        entity.setDictFileName(filename);
+        entity.setUniqueness(hash);
+        return entity;
+    }
+
+    public DictionaryEntity modifyExistingDictEntity(final DictionaryEntity entity, final Dictionary dict) {
+        entity.setRegexp(dict.regexp());
+        entity.setReplacement(dict.replacement());
+        return entity;
+    }
+
     public String dictListToJsonString(final List<Dictionary> dictionaryList) {
         final JSONObject jsonObject = new JSONObject();
         int index = 1;
@@ -104,31 +124,34 @@ public class DictionaryService {
         }
     }
 
-    public void recordJsonFileOrUpdateExisting(final String filename, final String content) {
+    //    public List<Dictionary> jsonStringToDictList(final String content) {
+    //        try {
+    //            Dictionary[] dictionaries = objectMapper.readValue(content, Dictionary[].class);
+    //            return Arrays.asList(dictionaries);
+    //        } catch (final Exception e) {
+    //            throw new RuntimeException("Failed to get dictionary list from JSON: " + e.getMessage(), e);
+    //        }
+    //    }
+
+    public List<DictionaryEntity> dictListVerification(final List<Dictionary> dictionaryList,
+            String filename) {
+        final List<DictionaryEntity> dictionaryEntities = new ArrayList<>();
+        dictionaryList.forEach(dict -> {
+            String hash = String.valueOf((dict.name() + dict.regexp() + dict.replacement()).hashCode());
+            final List<DictionaryEntity> dictUniqueness = dictionaryRepository.findByUniqueness(hash);
+            if (dictUniqueness.isEmpty()) {
+                dictionaryEntities.add(dictToDictEntity(dict, filename, hash));
+            } else {
+                dictionaryEntities.add(modifyExistingDictEntity(dictUniqueness.getFirst(), dict));
+            }
+        });
+        return dictionaryEntities;
+    }
+
+    public void recordFromJsonFileOrUpdateExisting(final String filename, final String content) {
         try {
             final List<Dictionary> dictionaryList = jsonStringToDictList(content);
-            final List<DictionaryEntity> dictionaryEntities = new ArrayList<>();
-            dictionaryList.forEach(dict -> {
-                final List<DictionaryEntity> dictionaryEntity = dictionaryRepository.findByDictFileNameAndName(
-                        filename, dict.name());
-                if (dictionaryEntity.isEmpty()) {
-                    final DictionaryEntity newEntity = new DictionaryEntity();
-                    newEntity.setName(dict.name());
-                    newEntity.setRegexp(dict.regexp());
-                    newEntity.setReplacement(dict.replacement());
-                    newEntity.setDefaultPattern(false);
-                    newEntity.setDictFileName(filename);
-                    dictionaryEntities.add(newEntity);
-                } else {
-                    final DictionaryEntity entity = dictionaryEntity.getFirst();
-                    entity.setRegexp(dict.regexp());
-                    entity.setReplacement(dict.replacement());
-                    dictionaryEntities.add(entity);
-                }
-                // TODO create another function for this long function
-            });
-
-            dictionaryRepository.saveAll(dictionaryEntities);
+            dictionaryRepository.saveAll(dictListVerification(dictionaryList, filename));
         } catch (final Exception e) {
             throw new RuntimeException("Failed to record JSON file: " + e.getMessage(), e);
         }

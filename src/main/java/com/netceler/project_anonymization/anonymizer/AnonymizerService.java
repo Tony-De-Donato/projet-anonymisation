@@ -5,7 +5,6 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -13,9 +12,8 @@ import java.util.regex.PatternSyntaxException;
 public class AnonymizerService {
 
     public String handleAnonymization(final String content, final List<Dictionary> dict) {
-
-        checkBothContent(content, dict);
-
+        checkContent(content);
+        checkDictionary(dict);
         return anonymiseStringWithDictList(content, dict);
     }
 
@@ -23,11 +21,7 @@ public class AnonymizerService {
         try {
             String result = content;
             for (final Dictionary dict : dictionary) {
-                final String regex = dict.regexp();
-                final String replacement = dict.replacement();
-                final Pattern compiledRegex = Pattern.compile(regex);
-                final Matcher matcher = compiledRegex.matcher(result);
-                result = matcher.replaceAll(replacement);
+                result = Pattern.compile(dict.regexp()).matcher(result).replaceAll(dict.replacement());
             }
             return result;
         } catch (final PatternSyntaxException e) {
@@ -44,17 +38,19 @@ public class AnonymizerService {
         }
     }
 
-    public void checkBothContent(final String content, final List<Dictionary> dictionary) {
-        if (content == null || dictionary == null || content.isBlank() || dictionary.isEmpty()) {
-            throw new IllegalArgumentException("Expected non empty content and dictionary");
+    public void checkContent(final String content) {
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("Expected non empty content");
         }
-        if (dictionary.stream()
+    }
+
+    public void checkDictionary(final List<Dictionary> dictionary) {
+
+        if (dictionary == null || dictionary.isEmpty() || dictionary.stream()
                 .anyMatch(
                         dict -> dict.name() == null || dict.regexp() == null || dict.replacement() == null)) {
-            throw new IllegalArgumentException("Expected non empty content and dictionary");
+            throw new IllegalArgumentException("Expected non empty dictionary");
         }
-
-        // TODO check content with two method separately
     }
 
 }

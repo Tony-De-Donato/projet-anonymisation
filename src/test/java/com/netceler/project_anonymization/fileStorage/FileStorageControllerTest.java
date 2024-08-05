@@ -163,8 +163,7 @@ class FileStorageControllerTest {
                 "application/json", dictFileInputStream);
 
         Assertions.assertThatThrownBy(() -> mockMvc.perform(
-                                multipart("/anonymize/").file(fileMultipartFile).file(dictMultipartFile))
-                        .andExpect(status().isBadRequest()))
-                .hasMessageContaining("Expected non empty content and dictionary");
+                        multipart("/anonymize/").file(fileMultipartFile).file(dictMultipartFile))
+                .andExpect(status().isBadRequest())).hasMessageContaining("Expected non empty dictionary");
     }
 }

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="1" author="TDEDONATO">
-        <preConditions onFail="MARK_RAN">
-            <not>
-                <tableExists tableName="dictionaries"/>
-            </not>
-        </preConditions>
+        <!--        <preConditions onFail="MARK_RAN">-->
+        <!--            <not>-->
+        <!--                <tableExists tableName="dictionaries"/>-->
+        <!--            </not>-->
+        <!--        </preConditions>-->
         <createTable tableName="dictionaries">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -25,6 +25,7 @@
             </column>
             <column name="dictfile_name" type="TEXT"/>
             <column name="default_pattern" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="uniqueness" type="TEXT"/>
         </createTable>
     </changeSet>
 

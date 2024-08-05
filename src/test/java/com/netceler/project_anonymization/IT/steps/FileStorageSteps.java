@@ -25,7 +25,6 @@ public class FileStorageSteps extends SpringCucumberTest {
 
     @Given("A configuration for file storage")
     public void configuration() {
-        fileStorageProperties.setDefaultLocation("src/test/resources/fileStorage/defaultStorage/");
         fileStorageProperties.setToAnonymizeLocation("src/test/resources/fileStorage/filesToAnonymize/");
         fileStorageProperties.setAnonymizedLocation("src/test/resources/fileStorage/filesAnonymized/");
     }

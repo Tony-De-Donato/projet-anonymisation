@@ -11,8 +11,6 @@ import org.springframework.context.annotation.Configuration;
 @Setter
 public class FileStorageProperties {
 
-    private String defaultLocation;
-
     private String toAnonymizeLocation;
 
     private String anonymizedLocation;

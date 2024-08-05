@@ -77,7 +77,7 @@ class AnonymizerServiceTest {
 
         Assertions.assertThatThrownBy(() -> anonymizerService.handleAnonymization(content, dict))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Expected non empty content and dictionary");
+                .hasMessage("Expected non empty dictionary");
     }
 
     @Test
@@ -87,7 +87,7 @@ class AnonymizerServiceTest {
 
         Assertions.assertThatThrownBy(() -> anonymizerService.handleAnonymization(content, List.of(dict)))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Expected non empty content and dictionary");
+                .hasMessage("Expected non empty content");
     }
 
 }

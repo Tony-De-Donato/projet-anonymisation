@@ -1,9 +1,13 @@
 package com.netceler.project_anonymization.dictionary;
 
 import org.apache.coyote.BadRequestException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -17,34 +21,38 @@ public class DictionaryController {
         this.dictionaryService = dictionaryService;
     }
 
-    @GetMapping(value = "/getDictByRuleName/{name}/{accurate}")
-    public ResponseEntity<String> getDictByName(@PathVariable final String name,
-            @PathVariable final Boolean accurate) throws BadRequestException {
-        return ResponseEntity.ok()
-                .body(dictionaryService.dictListToJsonString(
-                        dictionaryService.getDictionaryByName(name, accurate)));
+    @GetMapping(value = "/getDictByRuleName/{name}/{accurate}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public List<Dictionary> getDictByName(@PathVariable final String name,
+            @PathVariable final boolean accurate) throws BadRequestException {
+        return dictionaryService.getDictionaryByName(name, accurate);
     }
 
-    //TODO use primitif type when you can
-
-    @GetMapping(value = "/getDictByFileName/{filename}")
-    public List<Dictionary> getDictByFileName(@PathVariable final String filename)
-            throws BadRequestException {
+    @GetMapping(value = "/getDictByFileName/{filename}", produces = "application/json")
+    public List<Dictionary> getDictByFileName(@PathVariable final String filename) {
         return dictionaryService.getDictionaryByFileName(filename);
 
-        //TODO DOn't use Json object for stringify your list of Dictionary
+        //TODO Don't use Json object for stringify your list of Dictionary
     }
 
-    @GetMapping(value = "/getAllDefaultDict")
-    public ResponseEntity<String> getDefaultDict() {
-        return ResponseEntity.ok()
-                .body(dictionaryService.dictListToJsonString(dictionaryService.getAllDefaultPatterns()));
+    @GetMapping(value = "/getAllDefaultDict", produces = "application/json")
+    public List<Dictionary> getDefaultDict() {
+        return dictionaryService.getAllDefaultPatterns();
     }
 
-    @GetMapping(value = "/getAllDict")
-    public ResponseEntity<String> getAllDict() {
-        return ResponseEntity.ok()
-                .body(dictionaryService.dictListToJsonString(dictionaryService.getAllDictionaries()));
+    @GetMapping(value = "/getAllDict", produces = "application/json")
+    public List<Dictionary> getAllDict() {
+        return dictionaryService.getAllDictionaries();
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<String> handleBadRequestException(BadRequestException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
     }
 
 }

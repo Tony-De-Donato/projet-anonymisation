@@ -33,9 +33,11 @@ public class DictionaryEntity {
 
     @Column(name = "dictfile_name")
     String dictFileName;
-    // TODO find unicity of a file without their name
 
     @Column(name = "default_pattern")
     Boolean defaultPattern;
+
+    @Column(name = "uniqueness")
+    String uniqueness;
 
 }

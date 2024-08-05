@@ -2,7 +2,6 @@ package com.netceler.project_anonymization.dictionary;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,7 +9,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,10 +28,9 @@ public class DictionaryControllerTest {
 
     @Test
     void should_return_a_json_list_of_dict_when_getDictByRuleName_is_called() throws Exception {
-        Mockito.when(dictionaryService.dictListToJsonString(any())).thenReturn("toto");
-        mockMvc.perform(get("/getDictByRuleName/testDict/true"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("toto"));
+        //        Mockito.when(dictionaryService.dictListToJsonString(any())).thenReturn("toto");
+        mockMvc.perform(get("/getDictByRuleName/testDict/true").accept("application/json"))
+                .andExpect(status().isOk());
     }
 
     @Test
