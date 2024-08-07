@@ -1,7 +1,8 @@
 package com.netceler.project_anonymization.fileStorage;
 
-import org.apache.coyote.BadRequestException;
-import org.springframework.http.ResponseEntity;
+import com.netceler.project_anonymization.anonymizer.exceptions.AnonymizerServiceException;
+import com.netceler.project_anonymization.dictionary.exceptions.DictionaryServiceException;
+import com.netceler.project_anonymization.fileStorage.exceptions.FileStorageException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,16 +20,15 @@ public class FileStorageController {
     }
 
     @PostMapping(value = "/anonymize/")
-    public ResponseEntity<String> anonymize(@RequestParam("file") final MultipartFile file,
-            @RequestParam("dictionary") final MultipartFile dictionary) throws BadRequestException {
-        return ResponseEntity.ok().body(fileStorageService.anonymizeFile(file, dictionary).toString());
+    public String anonymize(@RequestParam("file") final MultipartFile file,
+            @RequestParam("dictionary") final MultipartFile dictionary)
+            throws FileStorageException, DictionaryServiceException, AnonymizerServiceException {
+        return fileStorageService.anonymizeFile(file, dictionary).toString();
     }
 
     @GetMapping(value = "/getDictFile/{filename}")
-    public ResponseEntity<String> getDict(@PathVariable final String filename) throws BadRequestException {
-        return ResponseEntity.ok().body(fileStorageService.getDictFile(filename).toString());
+    public String getDict(@PathVariable final String filename) throws FileStorageException {
+        return fileStorageService.getDictFile(filename);
     }
-
-    //TODO don't use ResponseEntity it's unused
 
 }

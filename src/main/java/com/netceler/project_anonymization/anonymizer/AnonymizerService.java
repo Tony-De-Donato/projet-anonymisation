@@ -1,7 +1,10 @@
 package com.netceler.project_anonymization.anonymizer;
 
+import com.netceler.project_anonymization.anonymizer.exceptions.AnonymizerServiceException;
+import com.netceler.project_anonymization.anonymizer.exceptions.InvalidContentException;
+import com.netceler.project_anonymization.anonymizer.exceptions.InvalidDictionaryException;
+import com.netceler.project_anonymization.anonymizer.exceptions.InvalidPatternException;
 import com.netceler.project_anonymization.dictionary.Dictionary;
-import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,46 +14,37 @@ import java.util.regex.PatternSyntaxException;
 @Service
 public class AnonymizerService {
 
-    public String handleAnonymization(final String content, final List<Dictionary> dict) {
+    public String handleAnonymization(final String content, final List<Dictionary> dict)
+            throws AnonymizerServiceException {
         checkContent(content);
         checkDictionary(dict);
         return anonymiseStringWithDictList(content, dict);
     }
 
-    public String anonymiseStringWithDictList(final String content, final List<Dictionary> dictionary) {
+    public String anonymiseStringWithDictList(final String content, final List<Dictionary> dictionary)
+            throws AnonymizerServiceException {
         try {
-            String result = content;
-            for (final Dictionary dict : dictionary) {
-                result = Pattern.compile(dict.regexp()).matcher(result).replaceAll(dict.replacement());
-            }
-            return result;
+            return dictionary.stream()
+                    .reduce(content, (res, dict) -> Pattern.compile(dict.regexp())
+                            .matcher(res)
+                            .replaceAll(dict.replacement()), (res1, res2) -> res1);
         } catch (final PatternSyntaxException e) {
-            throw new PatternSyntaxException("Invalid dictionary key, can't compile regex", e.getPattern(),
+            throw new InvalidPatternException("Invalid dictionary key, can't compile regex", e.getPattern(),
                     e.getIndex());
         }
     }
 
-    public JSONObject stringToJson(final String toConvert) throws IllegalArgumentException {
-        try {
-            return new JSONObject(toConvert);
-        } catch (final Exception e) {
-            throw new IllegalArgumentException(e.getMessage() + " : " + toConvert);
-        }
-    }
-
-    public void checkContent(final String content) {
+    public void checkContent(final String content) throws InvalidContentException {
         if (content == null || content.isBlank()) {
-            throw new IllegalArgumentException("Expected non empty content");
+            throw new InvalidContentException("Expected non empty content");
         }
     }
 
-    public void checkDictionary(final List<Dictionary> dictionary) {
-
+    public void checkDictionary(final List<Dictionary> dictionary) throws InvalidDictionaryException {
         if (dictionary == null || dictionary.isEmpty() || dictionary.stream()
                 .anyMatch(
                         dict -> dict.name() == null || dict.regexp() == null || dict.replacement() == null)) {
-            throw new IllegalArgumentException("Expected non empty dictionary");
+            throw new InvalidDictionaryException("Expected non empty dictionary");
         }
     }
-
 }

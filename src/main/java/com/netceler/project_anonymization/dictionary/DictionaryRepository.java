@@ -9,11 +9,11 @@ import java.util.List;
 @Repository
 public interface DictionaryRepository extends JpaRepository<DictionaryEntity, Long> {
 
-    @Query("select distinct dictionary from DictionaryEntity dictionary where dictionary.regexp in (select distinct dictionary.regexp from DictionaryEntity dictionary where dictionary.name = ?1)")
-    List<DictionaryEntity> findByName(String dictFileName);
+    @Query("select dictionary from DictionaryEntity dictionary where dictionary.id in (select max(dictionary.id) from DictionaryEntity dictionary where dictionary.name = ?1 group by dictionary.uniqueness)")
+    List<DictionaryEntity> findByName(String name);
 
-    @Query("select distinct dictionary from DictionaryEntity dictionary where dictionary.regexp in (select distinct dictionary.regexp from DictionaryEntity dictionary where dictionary.name like %?1%)")
-    List<DictionaryEntity> findByNameLike(String dictFileName);
+    @Query("select dictionary from DictionaryEntity dictionary where dictionary.id in (select max(dictionary.id) from DictionaryEntity dictionary where dictionary.name like %?1% group by dictionary.uniqueness)")
+    List<DictionaryEntity> findByNameLike(String name);
 
     @Query("select dictionary from DictionaryEntity dictionary where dictionary.dictFileName = ?1")
     List<DictionaryEntity> findByDictFileName(String dictFileName);
@@ -21,10 +21,7 @@ public interface DictionaryRepository extends JpaRepository<DictionaryEntity, Lo
     @Query("select dictionary from DictionaryEntity dictionary where dictionary.defaultPattern = true")
     List<DictionaryEntity> findDefaultPatterns();
 
-    @Query("select dictionary from DictionaryEntity dictionary where dictionary.dictFileName = ?1 and dictionary.name = ?2")
-    List<DictionaryEntity> findByDictFileNameAndName(String dictFileName, String name);
-
-    @Query("select dictionary from DictionaryEntity dictionary where dictionary.dictFileName = ?1 and dictionary.name = ?2 and dictionary.regexp = ?3")
-    List<DictionaryEntity> findByUniqueness(String Uniqueness);
+    @Query("select dictionary from DictionaryEntity dictionary where dictionary.uniqueness = ?1 and dictionary.dictFileName = ?2")
+    List<DictionaryEntity> findByUniquenessAndFilename(String uniqueness, String dictFileName);
 
 }

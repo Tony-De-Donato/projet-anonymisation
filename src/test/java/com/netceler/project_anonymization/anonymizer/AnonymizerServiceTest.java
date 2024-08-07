@@ -1,5 +1,9 @@
 package com.netceler.project_anonymization.anonymizer;
 
+import com.netceler.project_anonymization.anonymizer.exceptions.AnonymizerServiceException;
+import com.netceler.project_anonymization.anonymizer.exceptions.InvalidContentException;
+import com.netceler.project_anonymization.anonymizer.exceptions.InvalidDictionaryException;
+import com.netceler.project_anonymization.anonymizer.exceptions.InvalidPatternException;
 import com.netceler.project_anonymization.dictionary.Dictionary;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -7,16 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
-import java.util.regex.PatternSyntaxException;
 
 @SpringBootTest(classes = { AnonymizerService.class })
-class AnonymizerServiceTest {
+public class AnonymizerServiceTest {
 
     @Autowired
     AnonymizerService anonymizerService;
 
     @Test
-    void should_anonymize_string() {
+    void should_anonymize_string() throws AnonymizerServiceException {
         final String content = "lorem ipsum dolor sit amet";
         final Dictionary dict = new Dictionary("loremToIpsum", "lorem", "ipsum");
         final String result = anonymizerService.handleAnonymization(content, List.of(dict));
@@ -26,7 +29,7 @@ class AnonymizerServiceTest {
     }
 
     @Test
-    void should_replace_ip_address() {
+    void should_replace_ip_address() throws AnonymizerServiceException {
         final String content = "Lorem ipsum dolor sit amet, ip: 192.168.1.1";
         final Dictionary dict = new Dictionary("ip", "(?<=\\s|^)(?:[0-9]{1,3}\\.){3}[0-9]{1,3}(?=\\s|$)",
                 "xx.xx.xx.xx");
@@ -36,7 +39,7 @@ class AnonymizerServiceTest {
     }
 
     @Test
-    void should_anonymize_email() {
+    void should_anonymize_email() throws AnonymizerServiceException {
         final String content = "Lorem ipsum dolor sit amet, email: anonymize@meee.com";
         final Dictionary dict = new Dictionary("email",
                 "(?<=\\s|^)[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}(?=\\s|$)", "username@domain.com");
@@ -46,7 +49,7 @@ class AnonymizerServiceTest {
     }
 
     @Test
-    void should_anonymize_multiple_regex() {
+    void should_anonymize_multiple_regex() throws AnonymizerServiceException {
         final String content = "lorem ipsum dolor sit amet, ip: 192.168.1.1 and email: anonymize@meee.com ";
         final Dictionary dict1 = new Dictionary("email",
                 "(?<=\\s|^)[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}(?=\\s|$)", "username@domain.com");
@@ -66,7 +69,7 @@ class AnonymizerServiceTest {
         final Dictionary dict = new Dictionary("email", "(lorem", "lorem");
 
         Assertions.assertThatThrownBy(() -> anonymizerService.handleAnonymization(content, List.of(dict)))
-                .isInstanceOf(PatternSyntaxException.class)
+                .isInstanceOf(InvalidPatternException.class)
                 .hasMessageContaining("Invalid dictionary key, can't compile regex");
     }
 
@@ -76,7 +79,7 @@ class AnonymizerServiceTest {
         final List<Dictionary> dict = List.of();
 
         Assertions.assertThatThrownBy(() -> anonymizerService.handleAnonymization(content, dict))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidDictionaryException.class)
                 .hasMessage("Expected non empty dictionary");
     }
 
@@ -86,7 +89,7 @@ class AnonymizerServiceTest {
         final Dictionary dict = new Dictionary("loremToIpsum", "lorem", "ipsum");
 
         Assertions.assertThatThrownBy(() -> anonymizerService.handleAnonymization(content, List.of(dict)))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(InvalidContentException.class)
                 .hasMessage("Expected non empty content");
     }
 

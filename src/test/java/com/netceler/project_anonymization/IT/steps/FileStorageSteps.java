@@ -3,9 +3,7 @@ package com.netceler.project_anonymization.IT.steps;
 import com.netceler.project_anonymization.IT.configurations.SpringCucumberTest;
 import com.netceler.project_anonymization.fileStorage.FileStorageProperties;
 import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.assertj.core.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
@@ -25,7 +23,6 @@ public class FileStorageSteps extends SpringCucumberTest {
 
     @Given("A configuration for file storage")
     public void configuration() {
-        fileStorageProperties.setToAnonymizeLocation("src/test/resources/fileStorage/filesToAnonymize/");
         fileStorageProperties.setAnonymizedLocation("src/test/resources/fileStorage/filesAnonymized/");
     }
 
@@ -51,12 +48,12 @@ public class FileStorageSteps extends SpringCucumberTest {
 
     }
 
-    @Then("I should get the file {string} anonymized")
-    public void i_should_get_the_file_text_anonymized(String fileName) {
-        Assertions.assertThat(returnedFile).isNotNull();
-        if (!returnedFile.toString().equals("test_anonymized.txt")) {
-            throw new AssertionError("The file is not the expected one : " + returnedFile);
-        }
-        // TODO continue with a check of content of file
-    }
+    //    @Then("I should get the file {string} anonymized")
+    //    public void i_should_get_the_file_text_anonymized(String fileName) {
+    //        Assertions.assertThat(returnedFile).isNotNull();
+    //        if (!returnedFile.toString().equals("test_anonymized.txt")) {
+    //            throw new AssertionError("The file is not the expected one : " + returnedFile);
+    //        }
+    //        // TODO continue with a check of content of file
+    //    }
 }

@@ -27,7 +27,7 @@
             <column name="replacement" value="username@domain.com"/>
             <column name="dictfile_name" value="email_dict.json"/>
             <column name="default_pattern" value="true"/>
-            <column name="uniqueness" value="sha256_3"/>
+            <column name="uniqueness" value="-496969894"/>
         </insert>
 
 
