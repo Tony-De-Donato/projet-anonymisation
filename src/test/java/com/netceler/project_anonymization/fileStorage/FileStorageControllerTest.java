@@ -106,8 +106,7 @@ class FileStorageControllerTest {
     }
 
     @Test
-    void should_throw_a_file_storage_exception_when_get_url_is_called_with_a_non_existing_dict()
-            throws Exception {
+    void should_throw_a_file_storage_exception_when_get_url_is_called_with_a_non_existing_dict() {
         Assertions.assertThatThrownBy(() -> mockMvc.perform(get("/getDictFile/test_non_existing_dict.txt"))
                         .andExpect(status().isBadRequest()))
                 .isInstanceOf(ServletException.class)
@@ -115,8 +114,7 @@ class FileStorageControllerTest {
     }
 
     @Test
-    void should_throw_a_invalid_file_exception_when_get_url_is_called_with_a_non_dict_file()
-            throws Exception {
+    void should_throw_a_invalid_file_exception_when_get_url_is_called_with_a_non_dict_file() {
         Assertions.assertThatThrownBy(() -> mockMvc.perform(get("/getDictFile/test_nodict.txt")))
                 .isInstanceOf(ServletException.class)
                 .hasMessageContaining("This file is not a dictionary");

@@ -125,8 +125,7 @@ public class FileStorageServiceTest {
     @Test
     void test_get_dict_file() throws FileStorageException, IOException {
         String filename = "test_dict.json";
-        Path path = Storage;
-        Files.writeString(path.resolve(filename), "test content");
+        Files.writeString(Storage.resolve(filename), "test content");
 
         String content = fileStorageService.getDictFile(filename);
 
