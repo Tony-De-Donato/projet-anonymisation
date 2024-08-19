@@ -42,16 +42,18 @@ public class DictionaryService {
 
     public List<Dictionary> getAllDictionaries() throws DictionaryServiceException {
         try {
-            return dictEntityListToDictList(dictionaryRepository.findAll());
+            return dictEntityListToDictList(dictionaryRepository.findAllUnique());
         } catch (final Exception e) {
             throw new DictionaryServiceException("Error retrieving dictionaries: " + e.getMessage(), e);
         }
     }
 
-    public List<Dictionary> getDictionaryByFileName(final String dictFileName)
+    public List<Dictionary> getDictionaryByFileName(final String dictFileName, final boolean accurate)
             throws DictionaryServiceException {
         try {
-            return dictEntityListToDictList(dictionaryRepository.findByDictFileName(dictFileName));
+            return dictEntityListToDictList(accurate
+                    ? dictionaryRepository.findByDictFileName(dictFileName)
+                    : dictionaryRepository.findByDictFileNameLike(dictFileName));
         } catch (final Exception e) {
             throw new DictionaryNotFoundException("Error retrieving dictionaries: " + e.getMessage(), e);
         }
@@ -76,8 +78,8 @@ public class DictionaryService {
         try {
             return Arrays.asList(objectMapper.readValue(content, Dictionary[].class));
         } catch (final Exception e) {
-            throw new InvalidDictionaryException("Failed to get dictionary list from JSON: " + e.getMessage(),
-                    e);
+            throw new InvalidDictionaryException(
+                    "Failed to get dictionary list from JSON: " + content + e.getMessage(), e);
         }
     }
 

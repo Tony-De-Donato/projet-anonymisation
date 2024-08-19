@@ -11,7 +11,7 @@
             <column name="replacement" value="testReplaced"/>
             <column name="dictfile_name" value="test_dict.json"/>
             <column name="default_pattern" value="false"/>
-            <column name="uniqueness" value="sha256_1"/>
+            <column name="uniqueness" value="-777859775"/>
         </insert>
         <insert tableName="dictionaries">
             <column name="name" value="testDictDefault"/>
@@ -19,7 +19,7 @@
             <column name="replacement" value="testReplacedDefault"/>
             <column name="dictfile_name" value="testDefault_dict.json"/>
             <column name="default_pattern" value="true"/>
-            <column name="uniqueness" value="sha256_2"/>
+            <column name="uniqueness" value="-1202730516"/>
         </insert>
         <insert tableName="dictionaries">
             <column name="name" value="email"/>

@@ -22,10 +22,10 @@ public class DictionaryController {
         return dictionaryService.getDictionaryByName(name, accurate);
     }
 
-    @GetMapping(value = "/getDictByFileName/{filename}")
-    public List<Dictionary> getDictByFileName(@PathVariable final String filename)
-            throws DictionaryServiceException {
-        return dictionaryService.getDictionaryByFileName(filename);
+    @GetMapping(value = "/getDictByFileName/{filename}/{accurate}")
+    public List<Dictionary> getDictByFileName(@PathVariable final String filename,
+            @PathVariable final boolean accurate) throws DictionaryServiceException {
+        return dictionaryService.getDictionaryByFileName(filename, accurate);
 
     }
 

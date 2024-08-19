@@ -32,3 +32,4 @@ build/
 ### VS Code ###
 .vscode/
 /anonymizer-deployment/db-data/
+/src/main/resources/fileStorage/filesAnonymized/

@@ -129,16 +129,17 @@ public class FileStorageService {
 
     public JSONObject anonymizeFile(final MultipartFile file, final MultipartFile conversionDictionary)
             throws FileStorageException, DictionaryServiceException, AnonymizerServiceException {
+        final String fileName = file.getOriginalFilename();
         final String fileContent = readContentFromMultipartFile(file);
         final String dictContent = readContentFromMultipartFile(conversionDictionary);
         final List<Dictionary> dictList = dictionaryService.jsonStringToDictList(dictContent);
         final String anonymizedContent = anonymizerService.handleAnonymization(fileContent, dictList);
-        final String newFileName = addStringBeforeExtension(file.getOriginalFilename(), "_anonymized");
+        final String newFileName = addStringBeforeExtension(fileName, "_anonymized");
         final String newDictName = modifyExtension(
                 addStringBeforeExtension(file.getOriginalFilename(), "_dict"), ".json");
         storeFromFileProperties(newFileName, anonymizedContent, anonymizedStorage);
         storeFromFileProperties(newDictName, dictContent, anonymizedStorage);
-        dictionaryService.recordFromJsonFileOrUpdateExisting(newDictName, dictContent);
+        dictionaryService.recordFromJsonFileOrUpdateExisting(fileName, dictContent);
         return new JSONObject().put("fileName", newFileName)
                 .put("dict", newDictName)
                 .put("content", anonymizedContent);
