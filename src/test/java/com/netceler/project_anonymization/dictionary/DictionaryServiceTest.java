@@ -79,7 +79,7 @@ public class DictionaryServiceTest {
                         "file.json", "hash"));
         when(dictionaryRepository.findByDictFileName("file.json")).thenReturn(entities);
 
-        List<Dictionary> result = dictionaryService.getDictionaryByFileName("file.json");
+        List<Dictionary> result = dictionaryService.getDictionaryByFileName("file.json", true);
 
         assertNotNull(result);
         assertEquals(1, result.size());
