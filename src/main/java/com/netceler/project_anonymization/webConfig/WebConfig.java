@@ -1,4 +1,4 @@
-package com.netceler.project_anonymization.WebConfig;
+package com.netceler.project_anonymization.webConfig;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
