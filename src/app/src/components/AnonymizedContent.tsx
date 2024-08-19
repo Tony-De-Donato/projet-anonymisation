@@ -1,8 +1,9 @@
 import React, {useEffect, useRef} from 'react';
 import {saveAs} from 'file-saver';
 import {Button, Grid, Paper, Typography} from '@mui/material';
-
+import VerifiedUserRoundedIcon from '@mui/icons-material/VerifiedUserRounded';
 import {AnonymizedResponse} from '../interfaces/AnonymizedResponse';
+import apiUrl from "../constant/apiUrl";
 
 interface AnonymizedContentProps {
     anonymizedData: AnonymizedResponse | null;
@@ -33,7 +34,7 @@ const FileUpload: React.FC<AnonymizedContentProps> = ({
 
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:8080/getDictFile/' + anonymizedData.dict, {
+            const response = await fetch(`${apiUrl}getDictFile/` + anonymizedData.dict, {
                 method: 'GET'
             });
             if (!response.ok) throw new Error('Error downloading dictionary');
@@ -86,14 +87,15 @@ const FileUpload: React.FC<AnonymizedContentProps> = ({
                         variant="contained"
                         color="primary"
                         onClick={() => downloadFile(anonymizedData.content, anonymizedData.fileName)}
+                        style={{marginRight: '2em'}}
                     >
+                        <VerifiedUserRoundedIcon style={{marginRight: '0.5em'}}/>
                         Download Anonymized File
                     </Button>
                     <Button
                         variant="outlined"
                         color="secondary"
                         onClick={() => downloadDictionary()}
-                        style={{marginLeft: '2em'}}
                     >
                         Download Dictionary
                     </Button>

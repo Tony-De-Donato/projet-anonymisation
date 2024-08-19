@@ -15,16 +15,16 @@ public interface DictionaryRepository extends JpaRepository<DictionaryEntity, Lo
     @Query("select dictionary from DictionaryEntity dictionary where dictionary.id in (select max(dictionary.id) from DictionaryEntity dictionary where dictionary.name like %?1% group by dictionary.uniqueness)")
     List<DictionaryEntity> findByNameLike(String name);
 
-    @Query("select dictionary from DictionaryEntity dictionary where dictionary.dictFileName = ?1")
+    @Query("select dictionary from DictionaryEntity dictionary where dictionary.fileName = ?1")
     List<DictionaryEntity> findByDictFileName(String dictFileName);
 
-    @Query("select dictionary from DictionaryEntity dictionary where dictionary.dictFileName like %?1%")
+    @Query("select dictionary from DictionaryEntity dictionary where dictionary.fileName like %?1%")
     List<DictionaryEntity> findByDictFileNameLike(String dictFileName);
 
     @Query("select dictionary from DictionaryEntity dictionary where dictionary.defaultPattern = true")
     List<DictionaryEntity> findDefaultPatterns();
 
-    @Query("select dictionary from DictionaryEntity dictionary where dictionary.uniqueness = ?1 and dictionary.dictFileName = ?2")
+    @Query("select dictionary from DictionaryEntity dictionary where dictionary.uniqueness = ?1 and dictionary.fileName = ?2")
     List<DictionaryEntity> findByUniquenessAndFilename(String uniqueness, String dictFileName);
 
     @Query("select dictionary from DictionaryEntity dictionary where dictionary.id in (select max(dictionary.id) from DictionaryEntity dictionary group by dictionary.uniqueness)")

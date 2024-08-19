@@ -17,7 +17,9 @@ import {RegexRule} from '../interfaces/RegexRule';
 
 import {StyledTableCellHeader, StyledTableRow} from "./StyledComponents";
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import RemoveIcon from '@mui/icons-material/Remove';
 import {styled} from "@mui/material/styles";
 
 interface SelectedRulesProps {
@@ -74,6 +76,7 @@ const SelectedRules: React.FC<SelectedRulesProps> = ({
                 try {
                     const content = e.target?.result as string;
                     const parsedRules: RegexRule[] = JSON.parse(content);
+                    if (!Array.isArray(parsedRules)) throw new Error;
                     setSelectedRules((prev) => [...prev, ...parsedRules]);
                     setErrorDictUpload(null);
                 } catch (err) {
@@ -85,6 +88,7 @@ const SelectedRules: React.FC<SelectedRulesProps> = ({
     };
 
     const handleAddOrUpdateRule = () => {
+        if (!newRule.name || !newRule.regexp || !newRule.replacement || newRule.name.length > 254) return;
         if (editingRule) {
             setSelectedRules((prev) =>
                 prev.map((rule: RegexRule) => (rule === editingRule ? newRule : rule)));
@@ -229,7 +233,7 @@ const SelectedRules: React.FC<SelectedRulesProps> = ({
                         <TableBody onMouseEnter={() => setIsHoveringTable(true)}
                                    onMouseLeave={() => setIsHoveringTable(false)}>
                             {selectedRules.map((rule, index) => (
-                                <StyledTableRow key={index}>
+                                <StyledTableRow key={index} onDoubleClick={() => handleEditRule(rule)}>
                                     <TableCell>{rule.name}</TableCell>
                                     <TableCell>{rule.regexp}</TableCell>
                                     <TableCell>{rule.replacement}</TableCell>
@@ -239,7 +243,7 @@ const SelectedRules: React.FC<SelectedRulesProps> = ({
                                             color="error"
                                             onClick={() => handleRuleSelection(rule)}
                                         >
-                                            -
+                                            <RemoveIcon/>
                                         </Button>
                                         <Button
                                             variant="outlined"
@@ -247,7 +251,7 @@ const SelectedRules: React.FC<SelectedRulesProps> = ({
                                             onClick={() => handleEditRule(rule)}
                                             style={{marginLeft: '8px'}}
                                         >
-                                            Edit
+                                            <EditIcon/>
                                         </Button>
                                     </TableCell>
                                 </StyledTableRow>

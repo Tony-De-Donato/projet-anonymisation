@@ -31,8 +31,8 @@ public class DictionaryEntity {
     @Column(name = "replacement")
     String replacement;
 
-    @Column(name = "dictfile_name")
-    String dictFileName;
+    @Column(name = "file_name")
+    String fileName;
 
     @Column(name = "default_pattern")
     Boolean defaultPattern;

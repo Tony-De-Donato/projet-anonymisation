@@ -69,7 +69,7 @@ public class DictionaryService {
         entity.setRegexp(dict.regexp());
         entity.setReplacement(dict.replacement());
         entity.setDefaultPattern(false);
-        entity.setDictFileName(filename);
+        entity.setFileName(filename);
         entity.setUniqueness(hash);
         return entity;
     }

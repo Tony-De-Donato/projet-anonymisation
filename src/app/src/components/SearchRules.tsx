@@ -21,6 +21,9 @@ import {RegexRule} from '../interfaces/RegexRule';
 import {StyledTableCellHeader, StyledTableRow} from "./StyledComponents";
 import CircularProgress from "@mui/material/CircularProgress";
 import apiUrl from "../constant/apiUrl";
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
+import SearchTwoToneIcon from "@mui/icons-material/SearchTwoTone";
 
 interface SearchRulesProps {
     rules: RegexRule[];
@@ -151,14 +154,14 @@ const SearchRules: React.FC<SearchRulesProps> = ({
                         {/* Search Rules Buttons */}
                         <Grid item xs={12} padding={2}>
                             <Grid container spacing={8} paddingInline={2}>
-                                <Grid item xs={12} sm={4}>
+                                <Grid item xs={12} sm={2}>
                                     <Button
                                         variant="contained"
                                         onClick={searchRulesFromSearchBar}
                                         fullWidth
                                         style={{whiteSpace: 'nowrap'}}
                                     >
-                                        Search
+                                        <SearchTwoToneIcon/>
                                     </Button>
                                 </Grid>
                                 <Grid item xs={12} sm={4}>
@@ -166,7 +169,7 @@ const SearchRules: React.FC<SearchRulesProps> = ({
                                         variant="outlined"
                                         onClick={() => searchRules(`${apiUrl}getAllDict`)}
                                         fullWidth
-                                        style={{whiteSpace: 'nowrap'}}
+                                        style={{whiteSpace: 'nowrap', minWidth: '120px'}}
                                     >
                                         Get All Rules
                                     </Button>
@@ -176,7 +179,7 @@ const SearchRules: React.FC<SearchRulesProps> = ({
                                         variant="outlined"
                                         onClick={() => searchRules(`${apiUrl}getAllDefaultDict`)}
                                         fullWidth
-                                        style={{whiteSpace: 'nowrap'}}
+                                        style={{whiteSpace: 'nowrap', minWidth: '170px'}}
                                     >
                                         Get Default Rules
                                     </Button>
@@ -221,7 +224,7 @@ const SearchRules: React.FC<SearchRulesProps> = ({
 
                                 {/* Search Results */}
                                 {rules.map((rule, index) => (
-                                    <StyledTableRow key={index}>
+                                    <StyledTableRow key={index} onDoubleClick={() => handleRuleSelection(rule)}>
                                         <TableCell>{rule.name}</TableCell>
                                         <TableCell>{rule.regexp}</TableCell>
                                         <TableCell>{rule.replacement}</TableCell>
@@ -232,7 +235,7 @@ const SearchRules: React.FC<SearchRulesProps> = ({
                                                     color="error"
                                                     onClick={() => handleRuleSelection(rule)}
                                                 >
-                                                    -
+                                                    <RemoveIcon/>
                                                 </Button>
                                                 :
                                                 <Button
@@ -240,7 +243,7 @@ const SearchRules: React.FC<SearchRulesProps> = ({
                                                     color="success"
                                                     onClick={() => handleRuleSelection(rule)}
                                                 >
-                                                    +
+                                                    <AddIcon/>
                                                 </Button>
                                             }
                                         </TableCell>

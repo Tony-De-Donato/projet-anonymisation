@@ -4,6 +4,7 @@ import {Button, Grid, Paper,} from '@mui/material';
 import {AnonymizedResponse} from '../interfaces/AnonymizedResponse';
 import {RegexRule} from '../interfaces/RegexRule';
 import {DropzoneArea} from "mui-file-dropzone";
+import apiUrl from "../constant/apiUrl";
 
 interface FileUploadProps {
     file: File | null;
@@ -35,9 +36,11 @@ const FileUpload: React.FC<FileUploadProps> = ({
         formData.append('file', file);
         formData.append('dictionary', dictFile);
         setError(null);
+        setAnonymizedData(null);
         setLoading(true);
+        await new Promise(r => setTimeout(r, 1000));
         try {
-            const response = await fetch('http://localhost:8080/anonymize/', {
+            const response = await fetch(`${apiUrl}anonymize/`, {
                 method: 'POST',
                 body: formData,
             });

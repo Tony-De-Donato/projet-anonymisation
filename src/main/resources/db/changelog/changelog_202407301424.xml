@@ -23,7 +23,7 @@
             <column name="replacement" type="TEXT">
                 <constraints nullable="false"/>
             </column>
-            <column name="dictfile_name" type="TEXT"/>
+            <column name="file_name" type="TEXT"/>
             <column name="default_pattern" type="BOOLEAN" defaultValueBoolean="false"/>
             <column name="uniqueness" type="TEXT"/>
         </createTable>

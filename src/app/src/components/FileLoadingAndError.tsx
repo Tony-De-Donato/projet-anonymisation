@@ -19,14 +19,18 @@ const FileLoadingAndError: React.FC<FileLoadingAndErrorProps> = ({
               style={{
                   zIndex: 100,
                   position: 'fixed',
-                  top: 0,
-                  right: 0,
+                  top: 10,
+                  right: 10,
               }}
               justifyContent="flex-end"
               alignItems="flex-start"
         >
             <Grid item>
-                <Paper style={{textAlign: 'center', fontSize: "x-large"}}>
+                <Paper style={{
+                    textAlign: 'center',
+                    fontSize: "x-large",
+                    backgroundColor: "rgb(237,237,237)"
+                }}>
                     {isLoading && <p style={{padding: "10px 20px 10px 20px"}}><CircularProgress/></p>}
                     {error && <p><Alert severity="error">{error}</Alert></p>}
                 </Paper>
