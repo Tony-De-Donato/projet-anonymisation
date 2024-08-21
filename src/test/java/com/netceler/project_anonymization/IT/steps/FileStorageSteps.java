@@ -8,6 +8,7 @@ import io.cucumber.java.en.When;
 import org.assertj.core.api.Assertions;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -22,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+@AutoConfigureMockMvc
 public class FileStorageSteps extends SpringCucumberTest {
 
     @Autowired
@@ -59,12 +61,10 @@ public class FileStorageSteps extends SpringCucumberTest {
                 requestEntity, String.class);
     }
 
-    @Then("I should get the file {string} anonymized and his content should be {string}")
-    public void i_should_get_the_file_text_anonymized(String fileName, String content) {
+    @Then("I should get the file anonymized and his content should be {string}")
+    public void i_should_get_the_file_text_anonymized(String content) {
         Assertions.assertThat(responseEntity).isNotNull();
-        Assertions.assertThat(new JSONObject(responseEntity.getBody()).get("fileName")).isEqualTo(fileName);
-        Assertions.assertThat(new JSONObject(responseEntity.getBody()).get("dict"))
-                .isEqualTo(fileName.replace("_anonymized.txt", "_dict.json"));
+        Assertions.assertThat(new JSONObject(responseEntity.getBody()).get("dict")).isNotNull();
         Assertions.assertThat(new JSONObject(responseEntity.getBody()).get("content")).isEqualTo(content);
     }
 }

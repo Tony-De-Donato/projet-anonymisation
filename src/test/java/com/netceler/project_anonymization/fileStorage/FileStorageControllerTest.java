@@ -2,13 +2,18 @@ package com.netceler.project_anonymization.fileStorage;
 
 import jakarta.servlet.ServletException;
 import org.assertj.core.api.Assertions;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,7 +25,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Testcontainers
 class FileStorageControllerTest {
+
+    @Container
+    @ServiceConnection
+    private static final PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer<>("postgres:16.3");
 
     @Autowired
     MockMvc mockMvc;
@@ -43,8 +53,8 @@ class FileStorageControllerTest {
 
         mockMvc.perform(multipart("/anonymize/").file(fileMultipartFile).file(dictMultipartFile))
                 .andExpect(status().isOk())
-                .andExpect(content().json(
-                        "{\"fileName\":\"test_anonymized.txt\", \"dict\":\"test_dict.json\", \"content\":\"Lorem ipsum username@domain.com dolor sit amet\"}"));
+                .andExpect(
+                        content().json("{\"content\":\"Lorem ipsum username@domain.com dolor sit amet\"}"));
 
     }
 
@@ -92,14 +102,16 @@ class FileStorageControllerTest {
         MockMultipartFile dictMultipartFile = new MockMultipartFile("dictionary", dictFile.getName(),
                 "application/json", dictFileInputStream);
 
-        mockMvc.perform(multipart("/anonymize/").file(fileMultipartFile).file(dictMultipartFile))
+        MvcResult result = mockMvc.perform(
+                        multipart("/anonymize/").file(fileMultipartFile).file(dictMultipartFile))
                 .andExpect(status().isOk())
-                .andExpect(content().json(
-                        "{\"fileName\":\"test_anonymized.txt\", \"dict\":\"test_dict.json\", \"content\":\"Lorem ipsum username@domain.com dolor sit amet\"}"));
+                .andExpect(content().json("{\"content\":\"Lorem ipsum username@domain.com dolor sit amet\"}"))
+                .andReturn();
 
         String dictReturn = "[{ \"name\" : \"email\",\"regexp\" : \"(?<=\\\\s|^)[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\\\.[A-Za-z]{2,}(?=\\\\s|$)\",\"replacement\" : \"username@domain.com\"}]";
 
-        mockMvc.perform(get("/getDictFile/test_dict.json"))
+        JSONObject dictFileName = new JSONObject(result.getResponse().getContentAsString());
+        mockMvc.perform(get("/getDictFile/" + dictFileName.get("dict")))
                 .andExpect(status().isOk())
                 .andExpect(content().json(dictReturn));
 

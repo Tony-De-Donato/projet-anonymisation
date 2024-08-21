@@ -67,6 +67,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
             <DropzoneArea
                 onChange={handleDropZoneChange}
                 filesLimit={1}
+                maxFileSize={100000000}
                 fileObjects={fileObjects}
                 onDelete={() => setFile(null)}
                 dropzoneText={"Drag and drop here or click to select a file for anonymization"}

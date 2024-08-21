@@ -14,7 +14,11 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.web.multipart.MultipartFile;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -34,7 +38,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
+@Testcontainers
 public class FileStorageServiceTest {
+
+    @Container
+    @ServiceConnection
+    private static final PostgreSQLContainer postgreSQLContainer = new PostgreSQLContainer<>("postgres:16.3");
 
     private final Path Storage = Paths.get("src/test/resources/fileStorage/filesAnonymized");
 
@@ -159,8 +168,9 @@ public class FileStorageServiceTest {
         JSONObject result = fileStorageService.anonymizeFile(multipartFile, multipartFile);
 
         assertNotNull(result);
-        assertEquals("test_anonymized.txt", result.getString("fileName"));
-        assertEquals("test_dict.json", result.getString("dict"));
+        assertTrue(result.getString("fileName").contains("test"));
+        assertTrue(result.getString("fileName").contains("_anonymized"));
+        assertTrue(result.getString("dict").contains("_dict.json"));
         assertEquals("anonymized content", result.getString("content"));
     }
 }

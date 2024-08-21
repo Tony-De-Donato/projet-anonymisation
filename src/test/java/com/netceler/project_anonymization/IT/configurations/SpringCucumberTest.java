@@ -6,9 +6,13 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 
 @CucumberContextConfiguration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+//@Testcontainers
 public class SpringCucumberTest {
 
-    //TODO add testcontainer for postgresql
+    //    @Container
+    //    @ServiceConnection
+    //    public static PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:16.3");
+
     @LocalServerPort
     protected int port;
 

@@ -50,12 +50,11 @@ public class FileStorageService {
 
     public void storeFromFileProperties(final String filename, String content, final Path path)
             throws FileStorageException {
-        try {
-            final Path destinationFile = path.resolve(filename).normalize().toAbsolutePath();
-            assertNotOutsideStorage(path, destinationFile);
-            final BufferedWriter writer = Files.newBufferedWriter(destinationFile);
+        final Path destinationFile = path.resolve(filename).normalize().toAbsolutePath();
+        assertNotOutsideStorage(path, destinationFile);
+
+        try (BufferedWriter writer = Files.newBufferedWriter(destinationFile)) {
             writer.write(content);
-            writer.close();
         } catch (final IOException e) {
             throw new FileStorageException("Failed to store file.", e);
         }
@@ -125,10 +124,6 @@ public class FileStorageService {
         } catch (final Exception e) {
             throw new InvalidFileException("Failed to modify file extension", e);
         }
-    }
-
-    public String addTimestampToEnd(final String string) {
-        return string + System.currentTimeMillis();
     }
 
     public JSONObject anonymizeFile(final MultipartFile file, final MultipartFile conversionDictionary)

@@ -6,8 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +22,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @SpringBootTest
+@Testcontainers
 public class DictionaryControllerTest {
+
+    @Container
+    @ServiceConnection
+    public static PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:16.3");
 
     @Autowired
     MockMvc mockMvc;
@@ -44,7 +53,7 @@ public class DictionaryControllerTest {
     void should_return_a_json_list_of_dict_when_getDictByFileName_is_called() throws Exception {
         final Dictionary defaultDict = new Dictionary("testDict", "testToReplace", "testReplaced");
 
-        MvcResult result = mockMvc.perform(get("/getDictByFileName/test_dict.json"))
+        MvcResult result = mockMvc.perform(get("/getDictByFileName/test_dict.json/true"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -97,14 +106,14 @@ public class DictionaryControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
 
-        mockMvc.perform(get("/getDictByFileName/unknown.json"))
+        mockMvc.perform(get("/getDictByFileName/unknown.json/true"))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
     }
 
     @Test
     void should_return_a_well_formated_json_list_when_getDictByFileName_is_called() throws Exception {
-        final MvcResult result = mockMvc.perform(get("/getDictByFileName/test_dict.json"))
+        final MvcResult result = mockMvc.perform(get("/getDictByFileName/test_dict.json/true"))
                 .andExpect(status().isOk())
                 .andReturn();
 

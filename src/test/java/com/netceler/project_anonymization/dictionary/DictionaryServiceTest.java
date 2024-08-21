@@ -17,6 +17,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+//@ExtendWith(MockitoExtension.class)
 public class DictionaryServiceTest {
 
     @Mock
@@ -55,7 +56,7 @@ public class DictionaryServiceTest {
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(dictionaryRepository, times(1)).findByName("name");
+        verify(dictionaryRepository).findByName("name");
     }
 
     @Test
@@ -63,13 +64,13 @@ public class DictionaryServiceTest {
         List<DictionaryEntity> entities = List.of(
                 dictionaryService.dictToDictEntity(new Dictionary("name", "regex", "replacement"),
                         "file.json", "hash"));
-        when(dictionaryRepository.findAll()).thenReturn(entities);
+        when(dictionaryRepository.findAllUnique()).thenReturn(entities);
 
         List<Dictionary> result = dictionaryService.getAllDictionaries();
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(dictionaryRepository, times(1)).findAll();
+        verify(dictionaryRepository).findAllUnique();
     }
 
     @Test
