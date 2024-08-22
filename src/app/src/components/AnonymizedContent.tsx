@@ -2,21 +2,20 @@ import React, {useEffect, useRef} from 'react';
 import {saveAs} from 'file-saver';
 import {Button, Grid, Paper, Typography} from '@mui/material';
 import VerifiedUserRoundedIcon from '@mui/icons-material/VerifiedUserRounded';
-import {AnonymizedResponse} from '../interfaces/AnonymizedResponse';
 import apiUrl from "../constant/apiUrl";
+import {useDispatch, useSelector} from "react-redux";
+import {RootState} from "../redux/store";
+import {setError, setLoading} from "../redux/slices/filesSlice";
 
-interface AnonymizedContentProps {
-    anonymizedData: AnonymizedResponse | null;
-    setLoading: (loading: boolean) => void;
-    setError: (error: string | null) => void;
+interface FileUploadProps {
+    setIsHoveringTable: (isHovering: boolean) => void;
 }
 
-const FileUpload: React.FC<AnonymizedContentProps> = ({
-                                                          anonymizedData,
-                                                          setLoading,
-                                                          setError
-                                                      }) => {
+const FileUpload: React.FC<FileUploadProps> = ({setIsHoveringTable}) => {
     const contentRef = useRef<HTMLPreElement | null>(null);
+
+    const dispatch = useDispatch();
+    const anonymizedData = useSelector((state: RootState) => state.files.anonymizedData);
 
     const downloadFile = (content: string, filename: string) => {
         const file = new Blob([content], {type: 'text/plain'});
@@ -32,7 +31,7 @@ const FileUpload: React.FC<AnonymizedContentProps> = ({
     const downloadDictionary = async () => {
         if (!anonymizedData) return;
 
-        setLoading(true);
+        dispatch(setLoading(true));
         try {
             const response = await fetch(`${apiUrl}getDictFile/` + anonymizedData.dict, {
                 method: 'GET'
@@ -42,7 +41,7 @@ const FileUpload: React.FC<AnonymizedContentProps> = ({
             saveAs(data, anonymizedData.dict);
             setLoading(false);
         } catch (err) {
-            setError('Failed to download dictionary');
+            dispatch(setError('Failed to download dictionary'));
             setLoading(false);
         }
     };
@@ -60,6 +59,8 @@ const FileUpload: React.FC<AnonymizedContentProps> = ({
 
         return (
             <pre
+                onMouseEnter={() => setIsHoveringTable(true)}
+                onMouseLeave={() => setIsHoveringTable(false)}
                 ref={contentRef}
                 style={{
                     maxHeight: '60vh',

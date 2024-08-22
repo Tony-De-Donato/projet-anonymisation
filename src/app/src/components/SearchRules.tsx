@@ -24,12 +24,11 @@ import apiUrl from "../constant/apiUrl";
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import SearchTwoToneIcon from "@mui/icons-material/SearchTwoTone";
+import {setRules, setSelectedRules} from "../redux/slices/rulesSlice";
+import {useDispatch, useSelector} from "react-redux";
+import {RootState} from "../redux/store";
 
 interface SearchRulesProps {
-    rules: RegexRule[];
-    setRules: React.Dispatch<React.SetStateAction<RegexRule[]>>;
-    selectedRules: RegexRule[];
-    setSelectedRules: React.Dispatch<React.SetStateAction<RegexRule[]>>;
     searchTerm: string;
     setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
     searchType: string;
@@ -44,10 +43,6 @@ interface SearchRulesProps {
 }
 
 const SearchRules: React.FC<SearchRulesProps> = ({
-                                                     rules,
-                                                     setRules,
-                                                     selectedRules,
-                                                     setSelectedRules,
                                                      searchTerm,
                                                      setSearchTerm,
                                                      searchType,
@@ -61,6 +56,11 @@ const SearchRules: React.FC<SearchRulesProps> = ({
                                                      setIsHoveringTable
                                                  }) => {
 
+    const dispatch = useDispatch();
+    const rules = useSelector((state: RootState) => state.rules.rules);
+    const selectedRules = useSelector((state: RootState) => state.rules.selectedRules);
+
+
     const searchRules = async (url: string) => {
         setLoading(true);
         setError(null);
@@ -68,7 +68,7 @@ const SearchRules: React.FC<SearchRulesProps> = ({
             const response = await fetch(url);
             if (!response.ok) throw new Error('Error fetching rules');
             const data: RegexRule[] = await response.json();
-            setRules(data);
+            dispatch(setRules(data));
             setLoading(false);
             if (data === undefined || data.length === 0) {
                 setError('No rules found with the given search criteria');
@@ -90,19 +90,22 @@ const SearchRules: React.FC<SearchRulesProps> = ({
 
     const handleRuleSelection = (rule: RegexRule) => {
         if (selectedRules.includes(rule)) {
-            setSelectedRules((prev) => prev.filter((r) => r !== rule));
+            dispatch(setSelectedRules(selectedRules.filter((r) => r !== rule)));
         } else {
-            setSelectedRules((prev) => [...prev, rule]);
+            dispatch(setSelectedRules([...selectedRules, rule]));
         }
     };
 
     const handleSelectAll = () => {
-        for (let i = 0; i < rules.length; i++) {
-            if (!selectedRules.includes(rules[i])) {
-                setSelectedRules((prev) => [...prev, rules[i]]);
+        const allSelectedRules = [...selectedRules];
+        rules.forEach((rule) => {
+            if (!selectedRules.includes(rule)) {
+                allSelectedRules.push(rule);
             }
-        }
-    }
+        });
+        dispatch(setSelectedRules(allSelectedRules));
+    };
+
 
     return (
         <Grid item xs={12} padding={2} component={Paper}>

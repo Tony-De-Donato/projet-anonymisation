@@ -1,17 +1,23 @@
 import React from 'react';
 import {Alert, Grid, Paper,} from '@mui/material';
 import CircularProgress from "@mui/material/CircularProgress";
+import {useDispatch, useSelector} from "react-redux";
+import Button from "@mui/material/Button";
+import {setError} from "../redux/slices/filesSlice";
+
 
 interface FileLoadingAndErrorProps {
-    isLoading: boolean;
-    error: string | null;
 }
 
-const FileLoadingAndError: React.FC<FileLoadingAndErrorProps> = ({
-                                                                     isLoading,
-                                                                     error
-                                                                 }) => {
+const FileLoadingAndError: React.FC<FileLoadingAndErrorProps> = () => {
 
+    const isLoading = useSelector((state: any) => state.files.loading);
+    const error = useSelector((state: any) => state.files.error);
+
+    const dispatch = useDispatch();
+    const handleClose = () => {
+        dispatch(setError(null));
+    }
 
     return (
 
@@ -32,7 +38,11 @@ const FileLoadingAndError: React.FC<FileLoadingAndErrorProps> = ({
                     backgroundColor: "rgb(237,237,237)"
                 }}>
                     {isLoading && <p style={{padding: "10px 20px 10px 20px"}}><CircularProgress/></p>}
-                    {error && <p><Alert severity="error">{error}</Alert></p>}
+                    {error && <p>
+                        <Alert severity="error">{error}
+                            <Button onClick={handleClose} color={"error"} style={{margin: "0", padding: "0"}}>X</Button>
+                        </Alert>
+                    </p>}
                 </Paper>
             </Grid>
         </Grid>

@@ -1,32 +1,17 @@
 import React from 'react';
-import {Button, Grid, Paper,} from '@mui/material';
-
+import {Button, Grid, Paper} from '@mui/material';
 import {AnonymizedResponse} from '../interfaces/AnonymizedResponse';
-import {RegexRule} from '../interfaces/RegexRule';
 import {DropzoneArea} from "mui-file-dropzone";
 import apiUrl from "../constant/apiUrl";
+import {RootState} from "../redux/store";
+import {useDispatch, useSelector} from "react-redux";
+import {setAnonymizedData, setError, setLoading} from "../redux/slices/filesSlice";
 
-interface FileUploadProps {
-    file: File | null;
-    setFile: (file: File | null) => void;
-    fileObjects: File[];
-    setFileObjects: (files: File[]) => void;
-    selectedRules: RegexRule[];
-    setLoading: (loading: boolean) => void;
-    setAnonymizedData: (data: AnonymizedResponse | null) => void;
-    setError: (error: string | null) => void;
-}
-
-const FileUpload: React.FC<FileUploadProps> = ({
-                                                   file,
-                                                   setFile,
-                                                   fileObjects,
-                                                   setFileObjects,
-                                                   selectedRules,
-                                                   setLoading,
-                                                   setAnonymizedData,
-                                                   setError,
-                                               }) => {
+const FileUpload: React.FC = () => {
+    const dispatch = useDispatch();
+    const [file, setFile] = React.useState<File | null>(null);
+    const [fileObjects, setFileObjects] = React.useState<File[]>([]);
+    const selectedRules = useSelector((state: RootState) => state.rules.selectedRules);
 
 
     const handleFileUpload = async () => {
@@ -35,9 +20,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
         const formData = new FormData();
         formData.append('file', file);
         formData.append('dictionary', dictFile);
-        setError(null);
-        setAnonymizedData(null);
-        setLoading(true);
+        dispatch(setError(null));
+        dispatch(setAnonymizedData(null));
+        dispatch(setLoading(true));
         await new Promise(r => setTimeout(r, 1000));
         try {
             const response = await fetch(`${apiUrl}anonymize/`, {
@@ -46,20 +31,24 @@ const FileUpload: React.FC<FileUploadProps> = ({
             });
             if (!response.ok) throw new Error('Error anonymizing file');
             const data: AnonymizedResponse = await response.json();
-            setAnonymizedData(data);
-            setLoading(false);
-
+            dispatch(setAnonymizedData(data));
         } catch (err) {
-            setError('Failed to anonymize file');
-            setLoading(false);
+            dispatch(setError("Failed to anonymize file"));
         }
+        dispatch(setLoading(false));
     };
 
     const handleDropZoneChange = (files: File[]) => {
-        setFile(files[0]);
+        if (files.length === 0) return;
+        const selectedFile = files[0];
+        setFile(selectedFile);
         setFileObjects(files);
-    }
+    };
 
+    const handleFileDelete = () => {
+        setFile(null);
+        setFileObjects([]);
+    };
 
     return (
 
@@ -69,13 +58,16 @@ const FileUpload: React.FC<FileUploadProps> = ({
                 filesLimit={1}
                 maxFileSize={100000000}
                 fileObjects={fileObjects}
-                onDelete={() => setFile(null)}
+                onDelete={handleFileDelete}
                 dropzoneText={"Drag and drop here or click to select a file for anonymization"}
                 showFileNames={true}
+                alertSnackbarProps={{
+                    autoHideDuration: 3000,
+                    anchorOrigin: {"vertical": "bottom", "horizontal": "right"}
+                }}
             />
 
-
-            {/* Centering the Button */}
+            {/* Centered Button */}
             <Grid container justifyContent="center" marginTop={2}>
                 <Button
                     variant="contained"
@@ -87,11 +79,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
                     Anonymize File
                 </Button>
             </Grid>
-
         </Grid>
-
     );
 };
 
 export default FileUpload;
-

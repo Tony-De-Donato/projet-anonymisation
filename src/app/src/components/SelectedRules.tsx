@@ -22,9 +22,12 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import RemoveIcon from '@mui/icons-material/Remove';
 import {styled} from "@mui/material/styles";
 
+
+import {useDispatch, useSelector} from 'react-redux';
+import {setSelectedRules} from "../redux/slices/rulesSlice";
+import {RootState} from '../redux/store';
+
 interface SelectedRulesProps {
-    selectedRules: RegexRule[];
-    setSelectedRules: React.Dispatch<React.SetStateAction<RegexRule[]>>;
     errorDictUpload: string | null;
     setErrorDictUpload: (error: string | null) => void;
     editingRule: RegexRule | null;
@@ -34,10 +37,7 @@ interface SelectedRulesProps {
     setIsHoveringTable: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-
 const SelectedRules: React.FC<SelectedRulesProps> = ({
-                                                         selectedRules,
-                                                         setSelectedRules,
                                                          errorDictUpload,
                                                          setErrorDictUpload,
                                                          editingRule,
@@ -46,7 +46,8 @@ const SelectedRules: React.FC<SelectedRulesProps> = ({
                                                          setNewRule,
                                                          setIsHoveringTable
                                                      }) => {
-
+    const dispatch = useDispatch();
+    const selectedRules = useSelector((state: RootState) => state.rules.selectedRules);
 
     const VisuallyHiddenInput = styled('input')({
         clip: 'rect(0 0 0 0)',
@@ -62,12 +63,11 @@ const SelectedRules: React.FC<SelectedRulesProps> = ({
 
     const handleRuleSelection = (rule: RegexRule) => {
         if (selectedRules.includes(rule)) {
-            setSelectedRules((prev) => prev.filter((r: RegexRule) => r !== rule));
+            dispatch(setSelectedRules(selectedRules.filter((r) => r !== rule)));
         } else {
-            setSelectedRules((prev) => [...prev, rule]);
+            dispatch(setSelectedRules([...selectedRules, rule]));
         }
     };
-
 
     const handleDictFileUpload = (file: File | null) => {
         if (file) {
@@ -76,8 +76,8 @@ const SelectedRules: React.FC<SelectedRulesProps> = ({
                 try {
                     const content = e.target?.result as string;
                     const parsedRules: RegexRule[] = JSON.parse(content);
-                    if (!Array.isArray(parsedRules)) throw new Error;
-                    setSelectedRules((prev) => [...prev, ...parsedRules]);
+                    if (!Array.isArray(parsedRules)) throw new Error();
+                    dispatch(setSelectedRules([...selectedRules, ...parsedRules]));
                     setErrorDictUpload(null);
                 } catch (err) {
                     setErrorDictUpload('Failed to parse dict file');
@@ -90,11 +90,12 @@ const SelectedRules: React.FC<SelectedRulesProps> = ({
     const handleAddOrUpdateRule = () => {
         if (!newRule.name || !newRule.regexp || !newRule.replacement || newRule.name.length > 254) return;
         if (editingRule) {
-            setSelectedRules((prev) =>
-                prev.map((rule: RegexRule) => (rule === editingRule ? newRule : rule)));
+            dispatch(setSelectedRules(
+                selectedRules.map((rule: RegexRule) => (rule === editingRule ? newRule : rule))
+            ));
             setEditingRule(null);
         } else {
-            setSelectedRules((prev) => [...prev, newRule]);
+            dispatch(setSelectedRules([...selectedRules, newRule]));
         }
         setNewRule({name: '', regexp: '', replacement: ''});
     };
@@ -105,14 +106,10 @@ const SelectedRules: React.FC<SelectedRulesProps> = ({
     };
 
     return (
-
         <Grid item xs={12} component={Paper} paddingTop={1} marginTop={1} md={12} maxHeight={800}>
-
-            {/*Upload Existing Dictionary File*/}
+            {/* Upload Existing Dictionary File */}
             <Grid item xs={12} md={12}>
-                <Grid container spacing={2} alignItems="center" padding={2}
-                      justifyContent="space-between">
-
+                <Grid container spacing={2} alignItems="center" padding={2} justifyContent="space-between">
                     {/* Typography (Selected Rules) */}
                     <Grid item>
                         <Typography variant="h6">Selected Rules</Typography>
@@ -120,9 +117,7 @@ const SelectedRules: React.FC<SelectedRulesProps> = ({
 
                     {/* File Input for existing dictionary */}
                     <Grid item>
-                        <Grid item> {errorDictUpload &&
-                            <Alert severity={"error"}>{errorDictUpload}</Alert>}</Grid>
-
+                        <Grid item>{errorDictUpload && <Alert severity={"error"}>{errorDictUpload}</Alert>}</Grid>
                         <Button
                             component="label"
                             color="secondary"
@@ -131,31 +126,33 @@ const SelectedRules: React.FC<SelectedRulesProps> = ({
                             startIcon={<CloudUploadIcon/>}
                         >
                             Upload Existing Dictionary File
-                            <VisuallyHiddenInput type="file" onChange={(e) => {
-                                if (e.target.files) {
-                                    handleDictFileUpload(e.target.files[0]);
-                                }
-                            }
-                            }/>
+                            <VisuallyHiddenInput
+                                type="file"
+                                onChange={(e) => {
+                                    if (e.target.files) {
+                                        handleDictFileUpload(e.target.files[0]);
+                                    }
+                                }}
+                            />
                         </Button>
-
                     </Grid>
                 </Grid>
             </Grid>
 
             {/* Selected Rules Table */}
             <Grid item xs={12} md={12} paddingX={2}>
-                <TableContainer sx={{
-                    borderRadius: 1,
-                    maxHeight: 600,
-                    overflow: 'auto',
-                    '&::-webkit-scrollbar': {
-                        display: 'none',
-                    }
-                }}>
+                <TableContainer
+                    sx={{
+                        borderRadius: 1,
+                        maxHeight: 600,
+                        overflow: 'auto',
+                        '&::-webkit-scrollbar': {
+                            display: 'none',
+                        }
+                    }}
+                >
                     <Table stickyHeader>
                         <TableHead>
-
                             {/* First Header Row */}
                             <TableRow>
                                 <StyledTableCellHeader>Name</StyledTableCellHeader>
@@ -165,7 +162,7 @@ const SelectedRules: React.FC<SelectedRulesProps> = ({
                                     <Button
                                         variant="contained"
                                         color="error"
-                                        onClick={() => setSelectedRules([])}
+                                        onClick={() => dispatch(setSelectedRules([]))}
                                         style={{whiteSpace: 'nowrap', minWidth: '100px'}}
                                     >
                                         <DeleteIcon/>
@@ -230,8 +227,10 @@ const SelectedRules: React.FC<SelectedRulesProps> = ({
                         </TableHead>
 
                         {/* All Selected Rules */}
-                        <TableBody onMouseEnter={() => setIsHoveringTable(true)}
-                                   onMouseLeave={() => setIsHoveringTable(false)}>
+                        <TableBody
+                            onMouseEnter={() => setIsHoveringTable(true)}
+                            onMouseLeave={() => setIsHoveringTable(false)}
+                        >
                             {selectedRules.map((rule, index) => (
                                 <StyledTableRow key={index} onDoubleClick={() => handleEditRule(rule)}>
                                     <TableCell>{rule.name}</TableCell>
@@ -260,10 +259,7 @@ const SelectedRules: React.FC<SelectedRulesProps> = ({
                     </Table>
                 </TableContainer>
             </Grid>
-
         </Grid>
-
-
     );
 };
 
