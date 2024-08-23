@@ -1,0 +1,28 @@
+services:
+  database:
+    image: postgres:16.3
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: tony
+      POSTGRES_DB: anonymizer
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+
+  anonymizer:
+    build: .
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - database
+
+
+  frontend:
+    build: src/app/
+    restart: always
+    ports:
+      - "3000:3000"
+
