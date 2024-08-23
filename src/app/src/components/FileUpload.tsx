@@ -67,6 +67,18 @@ const FileUpload: React.FC = () => {
                 }}
             />
 
+            <Grid container justifyContent="center" marginTop={2}>
+                {selectedRules.length === 0 && (
+                    <Grid item xs={12}>
+                        <p style={{color: 'red'}}>Please select at least one rule to anonymize the file</p>
+                    </Grid>
+                )}
+                {selectedRules.length > 0 && (
+                    <Grid item xs={12}>
+                        <p style={{color: 'green'}}>{selectedRules.length} rule(s) will be applied to the file</p>
+                    </Grid>
+                )}
+            </Grid>
             {/* Centered Button */}
             <Grid container justifyContent="center" marginTop={2}>
                 <Button

@@ -10,6 +10,7 @@
     </parent>
     <groupId>com.netceler</groupId>
     <artifactId>project-anonymization</artifactId>
+
     <version>0.0.1-SNAPSHOT</version>
     <name>project-anonymization</name>
     <description>project for file data anonymisation</description>
@@ -115,6 +116,13 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build-image-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

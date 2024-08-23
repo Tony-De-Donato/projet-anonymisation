@@ -1,5 +1,4 @@
 import {createHashRouter, createRoutesFromElements, Route, RouterProvider} from 'react-router-dom';
-import GlobalView from './views/GlobalView';
 import SearchRulesView from './views/SearchRulesView';
 import FileUploadView from './views/FileUploadView';
 import store, {persistor} from "./redux/store";
@@ -11,8 +10,7 @@ const App = () => {
     const router = createHashRouter(
         createRoutesFromElements(
             <Route>
-                <Route path="/" element={<GlobalView/>}/>
-                <Route path="/rules" element={<SearchRulesView/>}/>
+                <Route path="/" element={<SearchRulesView/>}/>
                 <Route path="/upload" element={<FileUploadView/>}/>
             </Route>
         )
